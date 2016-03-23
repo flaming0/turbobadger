@@ -33,7 +33,7 @@
 #define TB_FONT_RENDERER_TBBF
 
 /** Enable to support truetype fonts using freetype. */
-
+#define TB_FONT_RENDERER_FREETYPE
 
 /** Enable to support truetype fonts using stb_truetype.h (http://nothings.org/).
 	It's a *very unsafe* font library. Use only with fonts distributed with your
