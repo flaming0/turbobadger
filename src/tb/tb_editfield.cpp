@@ -62,6 +62,9 @@ TBEditField::TBEditField()
 
 	m_content_factory.editfield = this;
 	m_style_edit.SetContentFactory(&m_content_factory);
+
+    // FIXME: move to params.
+    m_style_edit.SetSelection(false);
 }
 
 TBEditField::~TBEditField()
