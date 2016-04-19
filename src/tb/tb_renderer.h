@@ -123,11 +123,11 @@ public:
 
 	/** Invoke OnContextLost on all listeners.
 		Call when bitmaps should be forgotten. */
-	void InvokeContextLost();
+	virtual void InvokeContextLost();
 
 	/** Invoke OnContextRestored on all listeners.
 		Call when bitmaps can safely be restored. */
-	void InvokeContextRestored();
+    virtual void InvokeContextRestored();
 
 	/** Defines the hint given to BeginBatchHint. */
 	enum BATCH_HINT {
