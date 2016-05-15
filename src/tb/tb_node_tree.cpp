@@ -157,7 +157,7 @@ class FileParser : public TBParserStream
 public:
 	bool Read(const char *filename, TBParserTarget *target)
 	{
-		f = TBFile::Open(filename, TBFile::MODE_READ);
+		f = g_tbSystemInterface->FileOpen(filename, TBFile::MODE_READ);
 		if (!f)
 			return false;
 		TBParser p;

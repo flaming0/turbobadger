@@ -176,7 +176,7 @@ bool TBBFRenderer::Load(const char *filename, int size)
 	// Append the bitmap filename for the given size.
 	bitmap_filename.AppendString(size_node->GetValueString("bitmap", ""));
 
-	m_img = TBImageLoader::CreateFromFile(bitmap_filename.GetData());
+	m_img = g_tbSystemInterface->ImageCreateFromFile(bitmap_filename.GetData());
 
 	return FindGlyphs();
 }

@@ -138,7 +138,7 @@ bool TBScroller::OnPan(int dx, int dy)
 
 	// Calculate the pan speed. Smooth it out with the
 	// previous pan speed to reduce fluctuation a little.
-	double now_ms = TBSystem::GetTimeMS();
+	double now_ms = g_tbSystemInterface->GetTimeMS();
 	if (m_pan_time_ms)
 	{
 		if (m_pan_delta_time_ms)
@@ -164,11 +164,11 @@ bool TBScroller::OnPan(int dx, int dy)
 
 void TBScroller::OnPanReleased()
 {
-	if (TBSystem::GetTimeMS() < m_pan_time_ms + PAN_START_THRESHOLD_MS)
+	if (g_tbSystemInterface->GetTimeMS() < m_pan_time_ms + PAN_START_THRESHOLD_MS)
 	{
 		// Don't start scroll if we have too little speed.
 		// This will prevent us from scrolling accidently.
-		float pan_start_distance_threshold_px = 2 * TBSystem::GetDPI() / 100.0f;
+		float pan_start_distance_threshold_px = 2 * g_tbSystemInterface->GetDPI() / 100.0f;
 		if (ABS(m_pan_dx) < pan_start_distance_threshold_px && ABS(m_pan_dy) < pan_start_distance_threshold_px)
 		{
 			StopOrSnapScroll();
@@ -197,7 +197,7 @@ void TBScroller::Start()
 	if (IsStarted())
 		return;
 	m_is_started = true;
-	double now_ms = TBSystem::GetTimeMS();
+	double now_ms = g_tbSystemInterface->GetTimeMS();
 	if (now_ms < m_scroll_start_ms + PAN_POWER_ACC_THRESHOLD_MS)
 	{
 		m_pan_power_multiplier_x *= PAN_POWER_MULTIPLIER;
@@ -217,7 +217,7 @@ void TBScroller::Stop()
 
 bool TBScroller::StopIfAlmostStill()
 {
-	double now_ms = TBSystem::GetTimeMS();
+	double now_ms = g_tbSystemInterface->GetTimeMS();
 	if (now_ms > m_scroll_start_ms + (double)m_scroll_duration_x_ms &&
 		now_ms > m_scroll_start_ms + (double)m_scroll_duration_y_ms)
 	{
@@ -261,7 +261,7 @@ void TBScroller::AdjustToSnappingAndScroll(float ppms_x, float ppms_y)
 void TBScroller::Scroll(float start_speed_ppms_x, float start_speed_ppms_y)
 {
 	// Set start values
-	m_scroll_start_ms = TBSystem::GetTimeMS();
+	m_scroll_start_ms = g_tbSystemInterface->GetTimeMS();
 	GetTargetScrollXY(m_scroll_start_scroll_x, m_scroll_start_scroll_y);
 	m_scroll_start_speed_ppms_x = start_speed_ppms_x;
 	m_scroll_start_speed_ppms_y = start_speed_ppms_y;
@@ -334,7 +334,7 @@ void TBScroller::OnMessageReceived(TBMessage *msg)
 
 		// Calculate the time elapsed from scroll start. Clip within the
 		// duration for each axis.
-		double now_ms = TBSystem::GetTimeMS();
+		double now_ms = g_tbSystemInterface->GetTimeMS();
 		float elapsed_time_x = (float)(now_ms - m_scroll_start_ms);
 		float elapsed_time_y = elapsed_time_x;
 		elapsed_time_x = MIN(elapsed_time_x, m_scroll_duration_x_ms);

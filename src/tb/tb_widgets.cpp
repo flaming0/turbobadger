@@ -40,7 +40,7 @@ class TBLongClickTimer : private TBMessageHandler
 public:
 	TBLongClickTimer(TBWidget *widget, bool touch) : m_widget(widget), m_touch(touch)
 	{
-		PostMessageDelayed(TBIDC("TBLongClickTimer"), nullptr, TBSystem::GetLongClickDelayMS());
+		PostMessageDelayed(TBIDC("TBLongClickTimer"), nullptr, g_tbSystemInterface->GetLongClickDelayMS());
 	}
 	virtual void OnMessageReceived(TBMessage *msg)
 	{
@@ -1028,7 +1028,7 @@ PreferredSize TBWidget::GetPreferredSize(const SizeConstraints &in_constraints)
 	}
 
 	// Measure and save to cache
-	TB_IF_DEBUG_SETTING(LAYOUT_PS_DEBUGGING, last_measure_time = TBSystem::GetTimeMS());
+	TB_IF_DEBUG_SETTING(LAYOUT_PS_DEBUGGING, last_measure_time = g_tbSystemInterface->GetTimeMS());
 	m_packed.is_cached_ps_valid = 1;
 	m_cached_ps = OnCalculatePreferredSize(constraints);
 	m_cached_sc = constraints;
@@ -1187,7 +1187,7 @@ void TBWidget::InvokePaint(const PaintProps &parent_paint_props)
 		// recently measured widgets with yellow.
 		// Invalidate to keep repainting until we've timed out (so it's removed).
 		const double debug_time = 300;
-		const double now = TBSystem::GetTimeMS();
+		const double now = g_tbSystemInterface->GetTimeMS();
 		if (now < last_layout_time + debug_time)
 		{
 			g_renderer->DrawRect(local_rect, TBColor(255, 30, 30, 200));
@@ -1403,7 +1403,7 @@ void TBWidget::HandlePanningOnMove(int x, int y)
 	// Check pointer movement
 	const int dx = pointer_down_widget_x - x;
 	const int dy = pointer_down_widget_y - y;
-	const int threshold = TBSystem::GetPanThreshold();
+	const int threshold = g_tbSystemInterface->GetPanThreshold();
 	const bool maybe_start_panning_x = ABS(dx) >= threshold;
 	const bool maybe_start_panning_y = ABS(dy) >= threshold;
 

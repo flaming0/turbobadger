@@ -207,7 +207,7 @@ void TBSelection::CopyToClipboard()
 	{
 		TBStr text;
 		if (GetText(text))
-			TBClipboard::SetText(text);
+			g_tbSystemInterface->ClipboardSetText(text);
 	}
 }
 
@@ -1776,7 +1776,7 @@ void TBStyleEdit::Copy()
 void TBStyleEdit::Paste()
 {
 	TBStr text;
-	if (TBClipboard::HasText() && TBClipboard::GetText(text))
+	if (g_tbSystemInterface->ClipboardHasText() && g_tbSystemInterface->ClipboardGetText(text))
 	{
 		InsertText(text, text.Length());
 		ScrollIfNeeded(true, true);
@@ -1938,7 +1938,7 @@ bool TBStyleEdit::SetText(const char *text, int text_len, TB_CARET_POS pos)
 
 bool TBStyleEdit::Load(const char *filename)
 {
-	TBFile* f = TBFile::Open(filename, TBFile::MODE_READ);
+	TBFile* f = g_tbSystemInterface->FileOpen(filename, TBFile::MODE_READ);
 	if (!f)
 		return false;
 	uint32 num_bytes = f->Size();

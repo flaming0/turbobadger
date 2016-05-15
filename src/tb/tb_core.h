@@ -60,6 +60,38 @@ void tb_core_shutdown();
 /** Returns true if turbo badger is initialized. */
 bool tb_core_is_initialized();
 
+// DF3D WORKAROUNDS
+
+class TBFile;
+class TBImageLoader;
+class TBStr;
+
+class TBSystemInterfaceWorkaround
+{
+public:
+    virtual ~TBSystemInterfaceWorkaround() = default;
+
+    virtual double GetTimeMS() = 0;
+    virtual void RescheduleTimer(double fire_time) = 0;
+    virtual int GetLongClickDelayMS() = 0;
+    virtual int GetPanThreshold() = 0;
+    virtual int GetPixelsPerLine() = 0;
+    virtual int GetDPI() = 0;
+    virtual void PrintDebug(const char *txt) = 0;
+
+    virtual void ClipboardEmpty() = 0;
+    virtual bool ClipboardHasText() = 0;
+    virtual bool ClipboardSetText(const char *text) = 0;
+    virtual bool ClipboardGetText(TBStr &text) = 0;
+
+    virtual TBFile* FileOpen(const char *filename, int mode) = 0;
+    virtual TBImageLoader* ImageCreateFromFile(const char *filename) = 0;
+};
+
+extern TBSystemInterfaceWorkaround *g_tbSystemInterface;
+
+void tb_set_system_interface_workaround(TBSystemInterfaceWorkaround *systemInterface);
+
 void tb_skin_recreate_workaround();
 
 } // namespace tb

@@ -416,7 +416,7 @@ TBBitmapFragment *TBBitmapFragmentManager::GetFragmentFromFile(const char *filen
 		return frag;
 
 	// Load the file
-	TBImageLoader *img = TBImageLoader::CreateFromFile(filename);
+	TBImageLoader *img = g_tbSystemInterface->ImageCreateFromFile(filename);
 	if (!img)
 		return nullptr;
 

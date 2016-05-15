@@ -40,7 +40,7 @@ TBMessageHandler::~TBMessageHandler()
 
 bool TBMessageHandler::PostMessageDelayed(TBID message, TBMessageData *data, uint32 delay_in_ms)
 {
-	return PostMessageOnTime(message, data, TBSystem::GetTimeMS() + (double)delay_in_ms);
+	return PostMessageOnTime(message, data, g_tbSystemInterface->GetTimeMS() + (double)delay_in_ms);
 }
 
 bool TBMessageHandler::PostMessageOnTime(TBID message, TBMessageData *data, double fire_time)
@@ -79,7 +79,7 @@ bool TBMessageHandler::PostMessageOnTime(TBID message, TBMessageData *data, doub
 		// If we added it first and there's no normal messages, the next fire time has
 		// changed and we have to reschedule the timer.
 		if (!g_all_normal_messages.GetFirst() && g_all_delayed_messages.GetFirst() == msg)
-			TBSystem::RescheduleTimer(msg->fire_time_ms);
+			g_tbSystemInterface->RescheduleTimer(msg->fire_time_ms);
 		return true;
 	}
 	return false;
@@ -95,7 +95,7 @@ bool TBMessageHandler::PostMessage(TBID message, TBMessageData *data)
 		// If we added it and there was no messages, the next fire time has
 		// changed and we have to rescedule the timer.
 		if (g_all_normal_messages.GetFirst() == msg)
-			TBSystem::RescheduleTimer(0);
+            g_tbSystemInterface->RescheduleTimer(0);
 		return true;
 	}
 	return false;
@@ -142,7 +142,7 @@ void TBMessageHandler::ProcessMessages()
 	TBLinkListOf<TBMessageLink>::Iterator iter = g_all_delayed_messages.IterateForward();
 	while (TBMessage *msg = static_cast<TBMessage*>(iter.GetAndStep()))
 	{
-		if (TBSystem::GetTimeMS() >= msg->fire_time_ms)
+		if (g_tbSystemInterface->GetTimeMS() >= msg->fire_time_ms)
 		{
 			// Remove from global list
 			g_all_delayed_messages.Remove(msg);

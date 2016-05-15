@@ -218,21 +218,21 @@ bool TBScrollContainer::OnEvent(const TBWidgetEvent &ev)
 	else if (ev.type == EVENT_TYPE_WHEEL && ev.modifierkeys == TB_MODIFIER_NONE)
 	{
 		double old_val_y = m_scrollbar_y.GetValueDouble();
-		m_scrollbar_y.SetValueDouble(old_val_y + ev.delta_y * TBSystem::GetPixelsPerLine());
+		m_scrollbar_y.SetValueDouble(old_val_y + ev.delta_y * g_tbSystemInterface->GetPixelsPerLine());
 		double old_val_x = m_scrollbar_x.GetValueDouble();
-		m_scrollbar_x.SetValueDouble(old_val_x + ev.delta_x * TBSystem::GetPixelsPerLine());
+		m_scrollbar_x.SetValueDouble(old_val_x + ev.delta_x * g_tbSystemInterface->GetPixelsPerLine());
 		return (m_scrollbar_x.GetValueDouble() != old_val_x || m_scrollbar_y.GetValueDouble() != old_val_y);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{
 		if (ev.special_key == TB_KEY_LEFT && m_scrollbar_x.CanScrollNegative())
-			ScrollBySmooth(-TBSystem::GetPixelsPerLine(), 0);
+			ScrollBySmooth(-g_tbSystemInterface->GetPixelsPerLine(), 0);
 		else if (ev.special_key == TB_KEY_RIGHT && m_scrollbar_x.CanScrollPositive())
-			ScrollBySmooth(TBSystem::GetPixelsPerLine(), 0);
+			ScrollBySmooth(g_tbSystemInterface->GetPixelsPerLine(), 0);
 		else if (ev.special_key == TB_KEY_UP && m_scrollbar_y.CanScrollNegative())
-			ScrollBySmooth(0, -TBSystem::GetPixelsPerLine());
+			ScrollBySmooth(0, -g_tbSystemInterface->GetPixelsPerLine());
 		else if (ev.special_key == TB_KEY_DOWN && m_scrollbar_y.CanScrollPositive())
-			ScrollBySmooth(0, TBSystem::GetPixelsPerLine());
+			ScrollBySmooth(0, g_tbSystemInterface->GetPixelsPerLine());
 		else if (ev.special_key == TB_KEY_PAGE_UP && m_scrollbar_y.CanScrollNegative())
 			ScrollBySmooth(0, -GetPaddingRect().h);
 		else if (ev.special_key == TB_KEY_PAGE_DOWN && m_scrollbar_y.CanScrollPositive())

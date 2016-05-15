@@ -57,7 +57,7 @@ int TBDimensionConverter::MmToPx(int mm) const
 	if (mm <= TB_INVALID_DIMENSION || mm == 0)
 		return mm;
 
-	return (int) (mm * TBSystem::GetDPI() / 25.4f + 0.5f);
+	return (int) (mm * g_tbSystemInterface->GetDPI() / 25.4f + 0.5f);
 }
 
 int TBDimensionConverter::GetPxFromString(const char *str, int def_value) const

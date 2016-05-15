@@ -10,7 +10,7 @@
 #include "tb_str.h"
 
 #ifdef TB_RUNTIME_DEBUG_INFO
-void TBDebugOut(const char *str);
+inline void TBDebugOut(const char *str) { tb::g_tbSystemInterface->PrintDebug(str); }
 #define TBDebugPrint(str, ...) { tb::TBStr tmp; tmp.SetFormatted(str, __VA_ARGS__); TBDebugOut(tmp); }
 #else
 #define TBDebugOut(str) ((void)0)

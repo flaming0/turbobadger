@@ -148,7 +148,7 @@ bool FreetypeFontRenderer::Load(const char *filename, int size)
 	if (!m_face)
 		return false;
 
-	TBFile *f = TBFile::Open(filename, TBFile::MODE_READ);
+	TBFile *f = g_tbSystemInterface->FileOpen(filename, TBFile::MODE_READ);
 	if (!f)
 		return false;
 

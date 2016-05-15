@@ -540,7 +540,7 @@ bool TBScrollBar::OnEvent(const TBWidgetEvent &ev)
 	else if (ev.type == EVENT_TYPE_WHEEL)
 	{
 		double old_val = m_value;
-		SetValueDouble(m_value + ev.delta_y * TBSystem::GetPixelsPerLine());
+		SetValueDouble(m_value + ev.delta_y * g_tbSystemInterface->GetPixelsPerLine());
 		return m_value != old_val;
 	}
 	return false;

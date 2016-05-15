@@ -20,6 +20,7 @@ TBSkin *g_tb_skin = nullptr;
 TBWidgetsReader *g_widgets_reader = nullptr;
 TBLanguage *g_tb_lng = nullptr;
 TBFontManager *g_font_manager = nullptr;
+TBSystemInterfaceWorkaround *g_tbSystemInterface = nullptr;
 
 bool tb_core_init(TBRenderer *renderer)
 {
@@ -46,11 +47,17 @@ void tb_core_shutdown()
     delete g_tb_skin;
     delete g_font_manager;
     delete g_tb_lng;
+    delete g_tbSystemInterface;
 }
 
 bool tb_core_is_initialized()
 {
     return g_widgets_reader ? true : false;
+}
+
+void tb_set_system_interface_workaround(TBSystemInterfaceWorkaround *systemInterface)
+{
+    g_tbSystemInterface = systemInterface;
 }
 
 void tb_skin_recreate_workaround()
