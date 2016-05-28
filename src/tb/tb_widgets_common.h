@@ -232,10 +232,14 @@ public:
 
 	// == TBMessageHandler ==============================================================
 	virtual void OnMessageReceived(TBMessage *msg);
+
+    // df3d workarounds
+    void setAnimationSpeed(int delayMs) { m_spinSpeedMs = delayMs; }
 protected:
 	int m_value;
 	int m_frame;
 	TBID m_skin_fg;
+    int m_spinSpeedMs;
 };
 
 /** TBRadioCheckBox has shared functionality for TBCheckBox and TBRadioButton. */

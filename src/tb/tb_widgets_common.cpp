@@ -333,6 +333,8 @@ TBProgressSpinner::TBProgressSpinner()
 	: m_value(0)
 	, m_frame(0)
 {
+    setAnimationSpeed(spin_speed);
+
 	SetSkinBg(TBIDC("TBProgressSpinner"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
 	m_skin_fg.Set(TBIDC("TBProgressSpinner.fg"));
 }
@@ -350,7 +352,7 @@ void TBProgressSpinner::SetValue(int value)
 		if (!GetMessageByID(TBID(1)))
 		{
 			m_frame = 0;
-			PostMessageDelayed(TBID(1), nullptr, spin_speed);
+			PostMessageDelayed(TBID(1), nullptr, m_spinSpeedMs);
 		}
 	}
 	else
@@ -381,7 +383,7 @@ void TBProgressSpinner::OnMessageReceived(TBMessage *msg)
 	m_frame++;
 	Invalidate();
 	// Keep animation running
-	PostMessageDelayed(TBID(1), nullptr, spin_speed);
+	PostMessageDelayed(TBID(1), nullptr, m_spinSpeedMs);
 }
 
 // == TBRadioCheckBox =======================================
