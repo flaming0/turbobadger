@@ -52,7 +52,7 @@ extern TBLanguage *g_tb_lng;
 extern TBFontManager *g_font_manager;
 
 /** Initialize turbo badger. Call this before using any turbo badger API. */
-bool tb_core_init(TBRenderer *renderer);
+bool tb_core_init(TBRenderer *renderer, int screenWidth, int screenHeight);
 
 /** Shutdown turbo badger. Call this after deleting the last widget, to free turbo badger internals. */
 void tb_core_shutdown();
@@ -60,7 +60,7 @@ void tb_core_shutdown();
 /** Returns true if turbo badger is initialized. */
 bool tb_core_is_initialized();
 
-void tb_skin_recreate_workaround();
+void tb_skin_recreate_workaround(int screenWidth, int screenHeight);
 
 } // namespace tb
 

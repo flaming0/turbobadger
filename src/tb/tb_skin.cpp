@@ -112,11 +112,12 @@ bool TBSkinCondition::GetCondition(TBSkinConditionContext &context) const
 
 // == TBSkin ================================================================
 
-TBSkin::TBSkin()
+TBSkin::TBSkin(int screenWidth)
 	: m_listener(nullptr)
 	, m_default_disabled_opacity(0.3f)
 	, m_default_placeholder_opacity(0.2f)
 	, m_default_spacing(0)
+    , m_screenWidth(screenWidth)
 {
 	g_renderer->AddListener(this);
 
@@ -150,7 +151,7 @@ bool TBSkin::LoadInternal(const char *skin_file)
 		// is specified in. If the skin supports a different DPI that is
 		// closer to the screen DPI, all such dimensions will be scaled.
 		int base_dpi = node.GetValueInt("description>base-dpi", 96);
-		int supported_dpi = base_dpi;
+		int supported_dpi = m_screenWidth;  // df3d_workaround
 		if (TBNode *supported_dpi_node = node.GetNode("description>supported-dpi"))
 		{
 			assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
@@ -610,7 +611,7 @@ void TBSkinElement::SetBitmapDPI(const TBDimensionConverter &dim_conv, int bitma
 		// happen when we reload bitmaps without reloading the skin.
 		return;
 	}
-	if (dim_conv.NeedConversion())
+	if (false)
 	{
 		if (bitmap_dpi == dim_conv.GetDstDPI())
 		{

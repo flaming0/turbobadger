@@ -21,13 +21,13 @@ TBWidgetsReader *g_widgets_reader = nullptr;
 TBLanguage *g_tb_lng = nullptr;
 TBFontManager *g_font_manager = nullptr;
 
-bool tb_core_init(TBRenderer *renderer)
+bool tb_core_init(TBRenderer *renderer, int screenWidth, int screenHeight)
 {
     TBDebugPrint("Initiating Turbo Badger - version %s\n", TB_VERSION_STR);
     g_renderer = renderer;
     g_tb_lng = new TBLanguage;
     g_font_manager = new TBFontManager();
-    g_tb_skin = new TBSkin();
+    g_tb_skin = new TBSkin(screenWidth);
     g_widgets_reader = TBWidgetsReader::Create();
 #ifdef TB_IMAGE
     g_image_manager = new TBImageManager();
@@ -53,10 +53,10 @@ bool tb_core_is_initialized()
     return g_widgets_reader ? true : false;
 }
 
-void tb_skin_recreate_workaround()
+void tb_skin_recreate_workaround(int screenWidth, int screenHeight)
 {
     delete g_tb_skin;
-    g_tb_skin = new TBSkin();
+    g_tb_skin = new TBSkin(screenWidth);
 }
 
 } // namespace tb

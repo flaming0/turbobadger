@@ -20,8 +20,8 @@ void TBDimensionConverter::SetDPI(int src_dpi, int dst_dpi)
 	m_src_dpi = src_dpi;
 	m_dst_dpi = dst_dpi;
 	m_dst_dpi_str.Clear();
-	if (NeedConversion())
-		m_dst_dpi_str.SetFormatted("@%d", m_dst_dpi);
+	//if (NeedConversion())
+	//	m_dst_dpi_str.SetFormatted("@%d", m_dst_dpi);
 }
 
 void TBDimensionConverter::GetDstDPIFilename(const char *filename, TBTempBuffer *tempbuf) const
@@ -38,7 +38,7 @@ void TBDimensionConverter::GetDstDPIFilename(const char *filename, TBTempBuffer 
 
 int TBDimensionConverter::DpToPx(int dp) const
 {
-	if (dp <= TB_INVALID_DIMENSION || dp == 0 || !NeedConversion())
+	if (dp <= TB_INVALID_DIMENSION || dp == 0)
 		return dp;
 	if (dp > 0)
 	{
@@ -85,7 +85,7 @@ int TBDimensionConverter::GetPxFromValue(TBValue *value, int def_value) const
 	else if (value->GetType() == TBValue::TYPE_FLOAT)
 		// FIX: We might want float versions of all dimension functions.
 		return DpToPx((int)value->GetFloat());
-	return GetPxFromString(value->GetString(), def_value);
+	return DpToPx(value->GetInt());
 }
 
 } // namespace tb

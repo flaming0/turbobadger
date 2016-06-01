@@ -282,8 +282,10 @@ public:
 /** TBSkin contains a list of TBSkinElement. */
 class TBSkin : private TBRendererListener
 {
+    // df3d_workaround
+    int m_screenWidth = 0;
 public:
-	TBSkin();
+	TBSkin(int screenWidth);
 	virtual ~TBSkin();
 
 	/** Set the listener for this skin. */
