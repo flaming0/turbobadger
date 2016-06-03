@@ -113,11 +113,11 @@ bool TBSkinCondition::GetCondition(TBSkinConditionContext &context) const
 // == TBSkin ================================================================
 
 TBSkin::TBSkin(int screenWidth)
-	: m_listener(nullptr)
+	: m_screenWidth(screenWidth)
+    , m_listener(nullptr)
 	, m_default_disabled_opacity(0.3f)
 	, m_default_placeholder_opacity(0.2f)
 	, m_default_spacing(0)
-    , m_screenWidth(screenWidth)
 {
 	g_renderer->AddListener(this);
 
