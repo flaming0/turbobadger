@@ -460,6 +460,7 @@ TBBitmapFragment *TBBitmapFragmentManager::CreateNewFragment(const TBID &id, boo
 		{
 			m_fragment_maps.Add(fm);
 			frag = fm->CreateNewFragment(data_w, data_h, data_stride, data, m_add_border);
+            assert(frag != nullptr && "turbobadger: failed to place an image to an atlas!");
 		}
 		else
 			delete fm;
