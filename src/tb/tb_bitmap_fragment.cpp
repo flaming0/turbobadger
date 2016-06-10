@@ -346,8 +346,8 @@ void TBBitmapFragmentMap::CopyData(TBBitmapFragment *frag, int data_stride, uint
 		src = frag_data;
 		for (int i = 0; i < frag->m_rect.h; i++)
 		{
-			dst[0] = src[0] & 0xffffff00;
-			dst[rect.w - 1] = src[frag->m_rect.w - 1] & 0xffffff00;
+			dst[0] = src[0] & 0xffffffff;
+			dst[rect.w - 1] = src[frag->m_rect.w - 1] & 0xffffffff;
 			dst += m_bitmap_w;
 			src += data_stride;
 		}
@@ -355,11 +355,11 @@ void TBBitmapFragmentMap::CopyData(TBBitmapFragment *frag, int data_stride, uint
 		dst = m_bitmap_data + rect.x + 1 + rect.y * m_bitmap_w;
 		src = frag_data;
 		for (int i = 0; i < frag->m_rect.w; i++)
-			dst[i] = src[i] & 0xffffff00;
+			dst[i] = src[i] & 0xffffffff;
 		dst = m_bitmap_data + rect.x + 1 + (rect.y + rect.h - 1) * m_bitmap_w;
 		src = frag_data + (frag->m_rect.h - 1) * data_stride;
 		for (int i = 0; i < frag->m_rect.w; i++)
-			dst[i] = src[i] & 0xffffff00;
+			dst[i] = src[i] & 0xffffffff;
 	}
 }
 
