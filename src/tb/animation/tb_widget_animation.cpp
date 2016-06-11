@@ -227,7 +227,7 @@ void TBWidgetsAnimationManager::OnWidgetAdded(TBWidget *parent, TBWidget *widget
 	{
 		// Fade in dim layer
 		if (TBAnimationObject *anim = new TBWidgetAnimationOpacity(dimmer, TB_ALMOST_ZERO_OPACITY, 1.f, false))
-			TBAnimationManager::StartAnimation(anim, ANIMATION_CURVE_BEZIER);
+			TBAnimationManager::StartAnimation(anim, ANIMATION_CURVE_BEZIER, 300);
 	}
 }
 
