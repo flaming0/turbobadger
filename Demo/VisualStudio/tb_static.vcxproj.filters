@@ -105,9 +105,6 @@
     <ClCompile Include="..\..\src\tb\tb_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\tb\tb_addon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\tb\tb_bitmap_fragment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -255,6 +252,9 @@
     <ClCompile Include="..\..\src\tb\image\tb_image_manager.cpp">
       <Filter>Source Files\image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tb\tests\test_tb_hashtable.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\tb\tb_language.h">
@@ -330,9 +330,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\tb\tb_window.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\tb\tb_addon.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\tb\tb_bitmap_fragment.h">

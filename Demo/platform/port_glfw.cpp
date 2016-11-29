@@ -6,6 +6,7 @@
 #include "tb_skin.h"
 #include "tb_system.h"
 #include "tb_msg.h"
+#include "tb_editfield.h"
 #include "renderers/tb_renderer_gl.h"
 #include "tb_font_renderer.h"
 #include "Application.h"
@@ -42,7 +43,8 @@ public:
 	bool Init(App *app);
 	AppBackendGLFW()	: m_app(nullptr)
 						, m_renderer(nullptr)
-						, mainWindow(0)
+						, mainWindow(nullptr)
+						, m_cursor_i_beam(nullptr)
 						, m_has_pending_update(false)
 						, m_quit_requested(false) {}
 	~AppBackendGLFW();
@@ -56,6 +58,7 @@ public:
 	App *m_app;
 	TBRendererGL *m_renderer;
 	GLFWwindow *mainWindow;
+	GLFWcursor *m_cursor_i_beam;
 	bool m_has_pending_update;
 	bool m_quit_requested;
 };
@@ -273,8 +276,17 @@ void cursor_position_callback(GLFWwindow *window, double x, double y)
 {
 	mouse_x = (int)x;
 	mouse_y = (int)y;
-	if (GetBackend(window)->GetRoot() && !(ShouldEmulateTouchEvent() && !TBWidget::captured_widget))
+	if (GetBackend(window)->GetRoot() && !(ShouldEmulateTouchEvent() && !TBWidget::captured_widget)) {
 		GetBackend(window)->GetRoot()->InvokePointerMove(mouse_x, mouse_y, GetModifierKeys(), ShouldEmulateTouchEvent());
+
+		// Update cursor.
+		TBWidget *active_widget = TBWidget::captured_widget ? TBWidget::captured_widget : TBWidget::hovered_widget;
+		if (TBSafeCast<TBEditField>(active_widget)) {
+			glfwSetCursor(window, GetBackend(window)->m_cursor_i_beam);
+		} else {
+			glfwSetCursor(window, nullptr);
+		}
+	}
 }
 
 static void scroll_callback(GLFWwindow *window, double x, double y)
@@ -380,7 +392,7 @@ bool AppBackendGLFW::Init(App *app)
 		return false;
 	const int width = app->GetWidth() > 0 ? app->GetWidth() : 1920;
 	const int height = app->GetHeight() > 0 ? app->GetHeight() : 1080;
-	mainWindow = glfwCreateWindow(width, height, app->GetTitle(), NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, app->GetTitle(), nullptr, nullptr);
 	if (!mainWindow)
 	{
 		glfwTerminate();
@@ -393,6 +405,8 @@ bool AppBackendGLFW::Init(App *app)
 	//glfwSetInputMode(mainWindow, GLFW_STICKY_KEYS, GL_TRUE);
 	//glfwSetInputMode(mainWindow, GLFW_SYSTEM_KEYS, GL_TRUE);
     //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	m_cursor_i_beam = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
 
 	// Set callback functions
 	glfwSetWindowSizeCallback(mainWindow, window_size_callback);
@@ -436,6 +450,8 @@ AppBackendGLFW::~AppBackendGLFW()
 	m_app = nullptr;
 
 	tb_core_shutdown();
+
+	glfwDestroyCursor(m_cursor_i_beam);
 
 	glfwTerminate();
 

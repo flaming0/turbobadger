@@ -37,7 +37,7 @@ public:
 	TBOBJECT_SUBCLASS(TBWindow, TBWidget);
 
 	TBWindow();
-	~TBWindow();
+	virtual ~TBWindow();
 
 	/** Close this window.
 		Warning: This window will be deleted after this call! */
@@ -103,7 +103,7 @@ protected:
 	TBMover m_mover;
 	TBResizer m_resizer;
 	TBTextField m_textfield;
-	TBButton m_close_button;
+	TBWidget m_close_button;
 	WINDOW_SETTINGS m_settings;
 	TBWidgetSafePointer m_last_focus;
 	TBWindow *GetTopMostOtherWindow(bool only_activable_windows);
