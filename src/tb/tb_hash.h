@@ -23,7 +23,7 @@ namespace tb {
 #endif
 #endif
 
-#ifdef TB_SUPPORT_CONSTEXPR
+#if 0
 
 // FNV constants
 static constexpr uint32 basis = 2166136261U;
