@@ -75,10 +75,10 @@ if(MSVC)
  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
  add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
  # Remove exception handling
- STRING(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
- # Remove rtti
- STRING(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+ # STRING(REPLACE "/EHsc" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+ # # Remove rtti
+ # STRING(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+ # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif(MSVC)
 
 # Add TurboBadgerLib project
