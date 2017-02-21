@@ -153,22 +153,22 @@ bool TBSkin::LoadInternal(const char *skin_file)
 		// closer to the screen DPI, all such dimensions will be scaled.
 		int base_dpi = node.GetValueInt("description>base-dpi", 96);
 		int supported_dpi = m_screenWidth;  // df3d_workaround
-		if (TBNode *supported_dpi_node = node.GetNode("description>supported-dpi"))
-		{
-			assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
-			if (TBValueArray *arr = supported_dpi_node->GetValue().GetArray())
-			{
-				int screen_dpi = TBSystem::GetDPI();
-				int best_supported_dpi = 0;
-				for (int i = 0; i < arr->GetLength(); i++)
-				{
-					int candidate_dpi = arr->GetValue(i)->GetInt();
-					if (!best_supported_dpi || ABS(candidate_dpi - screen_dpi) < ABS(best_supported_dpi - screen_dpi))
-						best_supported_dpi = candidate_dpi;
-				}
-				supported_dpi = best_supported_dpi;
-			}
-		}
+		// if (TBNode *supported_dpi_node = node.GetNode("description>supported-dpi"))
+		// {
+		// 	assert(supported_dpi_node->GetValue().IsArray() || supported_dpi_node->GetValue().GetInt() == base_dpi);
+		// 	if (TBValueArray *arr = supported_dpi_node->GetValue().GetArray())
+		// 	{
+		// 		int screen_dpi = TBSystem::GetDPI();
+		// 		int best_supported_dpi = 0;
+		// 		for (int i = 0; i < arr->GetLength(); i++)
+		// 		{
+		// 			int candidate_dpi = arr->GetValue(i)->GetInt();
+		// 			if (!best_supported_dpi || ABS(candidate_dpi - screen_dpi) < ABS(best_supported_dpi - screen_dpi))
+		// 				best_supported_dpi = candidate_dpi;
+		// 		}
+		// 		supported_dpi = best_supported_dpi;
+		// 	}
+		// }
 		m_dim_conv.SetDPI(base_dpi, supported_dpi);
 	}
 
