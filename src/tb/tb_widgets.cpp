@@ -13,6 +13,7 @@
 #include "tb_scroller.h"
 #include "tb_font_renderer.h"
 #include <assert.h>
+#include <unordered_map>
 #ifdef TB_ALWAYS_SHOW_EDIT_FOCUS
 #include "tb_editfield.h"
 #endif // TB_ALWAYS_SHOW_EDIT_FOCUS
@@ -32,25 +33,37 @@ bool TBWidget::update_widget_states = true;
 bool TBWidget::update_skin_states = true;
 bool TBWidget::show_focus_state = false;
 
-static TBHashTableAutoDeleteOf<TBWidget::TOUCH_INFO> s_touch_info;
+static std::unordered_map<uint32, TBWidget::TOUCH_INFO*> s_touch_info;
 
 TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32 id)
 {
-	return s_touch_info.Get(id);
+    auto found = s_touch_info.find(id);
+    if (found == s_touch_info.end())
+        return nullptr;
+    return found->second;
 }
 
 static TBWidget::TOUCH_INFO *NewTouchInfo(uint32 id)
 {
-	assert(!s_touch_info.Get(id));
+//	assert(s_touch_info.find(id) == s_touch_info.end());
+    if (s_touch_info.find(id) != s_touch_info.end())
+    {
+        delete s_touch_info[id];
+    }
 	TBWidget::TOUCH_INFO *ti = new TBWidget::TOUCH_INFO;
 	memset(ti, 0, sizeof(TBWidget::TOUCH_INFO));
-	s_touch_info.Add(id, ti);
+    s_touch_info[id] = ti;
 	return ti;
 }
 
 static void DeleteTouchInfo(uint32 id)
 {
-	s_touch_info.Delete(id);
+    auto found = s_touch_info.find(id);
+    if (found != s_touch_info.end())
+    {
+        delete found->second;
+        s_touch_info.erase(found);
+	}
 }
 
 // == TBLongClickTimer ==================================================================
@@ -114,14 +127,14 @@ TBWidget::~TBWidget()
 		focused_widget = nullptr;
 
 	// Unreference from touch info
-	TBHashTableIteratorOf<TOUCH_INFO> it(&s_touch_info);
-	while (TOUCH_INFO *ti = it.GetNextContent())
-	{
+    for (auto &kv : s_touch_info)
+    {
+        auto ti = kv.second;
 		if (this == ti->hovered_widget)
 			ti->hovered_widget = nullptr;
 		if (this == ti->captured_widget)
 			ti->captured_widget = nullptr;
-	}
+    }
 
 	TBWidgetListener::InvokeWidgetDelete(this);
 	DeleteAllChildren();
