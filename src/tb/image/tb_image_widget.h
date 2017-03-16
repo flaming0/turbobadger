@@ -33,8 +33,11 @@ public:
 
 	virtual void OnInflate(const INFLATE_INFO &info);
 	virtual void OnPaint(const PaintProps &paint_props);
+
+    void SetIsFlipped(bool flipped) { m_isFlipped = flipped; }
 private:
 	TBImage m_image;
+    bool m_isFlipped = false;
 };
 
 } // namespace tb
