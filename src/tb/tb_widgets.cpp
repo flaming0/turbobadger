@@ -45,15 +45,15 @@ TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32 id)
 
 static TBWidget::TOUCH_INFO *NewTouchInfo(uint32 id)
 {
-//	assert(s_touch_info.find(id) == s_touch_info.end());
+    //	assert(s_touch_info.find(id) == s_touch_info.end());
     if (s_touch_info.find(id) != s_touch_info.end())
     {
         delete s_touch_info[id];
     }
-	TBWidget::TOUCH_INFO *ti = new TBWidget::TOUCH_INFO;
-	memset(ti, 0, sizeof(TBWidget::TOUCH_INFO));
+    TBWidget::TOUCH_INFO *ti = new TBWidget::TOUCH_INFO;
+    memset(ti, 0, sizeof(TBWidget::TOUCH_INFO));
     s_touch_info[id] = ti;
-	return ti;
+    return ti;
 }
 
 static void DeleteTouchInfo(uint32 id)
@@ -63,7 +63,7 @@ static void DeleteTouchInfo(uint32 id)
     {
         delete found->second;
         s_touch_info.erase(found);
-	}
+    }
 }
 
 // == TBLongClickTimer ==================================================================
@@ -72,602 +72,655 @@ static void DeleteTouchInfo(uint32 id)
 class TBLongClickTimer : private TBMessageHandler
 {
 public:
-	TBLongClickTimer(TBWidget *widget, bool touch) : m_widget(widget), m_touch(touch)
-	{
-		PostMessageDelayed(TBIDC("TBLongClickTimer"), nullptr, TBSystem::GetLongClickDelayMS());
-	}
-	virtual void OnMessageReceived(TBMessage *msg)
-	{
-		assert(msg->message == TBIDC("TBLongClickTimer"));
-		m_widget->MaybeInvokeLongClickOrContextMenu(m_touch);
-	}
+    TBLongClickTimer(TBWidget *widget, bool touch) : m_widget(widget), m_touch(touch)
+    {
+        PostMessageDelayed(TBIDC("TBLongClickTimer"), nullptr, TBSystem::GetLongClickDelayMS());
+    }
+    virtual void OnMessageReceived(TBMessage *msg)
+    {
+        assert(msg->message == TBIDC("TBLongClickTimer"));
+        m_widget->MaybeInvokeLongClickOrContextMenu(m_touch);
+    }
 private:
-	TBWidget *m_widget;
-	bool m_touch;
+    TBWidget *m_widget;
+    bool m_touch;
 };
 
 // == TBWidget::PaintProps ==============================================================
 
 TBWidget::PaintProps::PaintProps()
 {
-	// Set the default properties, used for the root widgets
-	// calling InvokePaint. The base values for all inheritance.
-	text_color = g_tb_skin->GetDefaultTextColor();
+    // Set the default properties, used for the root widgets
+    // calling InvokePaint. The base values for all inheritance.
+    text_color = g_tb_skin->GetDefaultTextColor();
 }
 
 // == TBWidget ==========================================================================
 
 TBWidget::TBWidget()
-	: m_parent(nullptr)
-	, m_opacity(1.f)
-	, m_state(WIDGET_STATE_NONE)
-	, m_gravity(WIDGET_GRAVITY_DEFAULT)
-	, m_layout_params(nullptr)
-	, m_scroller(nullptr)
-	, m_long_click_timer(nullptr)
-	, m_packed_init(0)
+    : m_parent(nullptr)
+    , m_opacity(1.f)
+    , m_state(WIDGET_STATE_NONE)
+    , m_gravity(WIDGET_GRAVITY_DEFAULT)
+    , m_layout_params(nullptr)
+    , m_scroller(nullptr)
+    , m_long_click_timer(nullptr)
+    , m_widgetAxis(AXIS_X)
+    , m_packed_init(0)
 {
 #ifdef TB_RUNTIME_DEBUG_INFO
-	last_measure_time = 0;
-	last_layout_time = 0;
+    last_measure_time = 0;
+    last_layout_time = 0;
 #endif // TB_RUNTIME_DEBUG_INFO
 }
 
 TBWidget::~TBWidget()
 {
-	assert(!m_parent); ///< A widget must be removed from parent before deleted
-	m_packed.is_dying = true;
+    assert(!m_parent); ///< A widget must be removed from parent before deleted
+    m_packed.is_dying = true;
 
-	// Unreference from pointer capture
-	if (this == hovered_widget)
-		hovered_widget = nullptr;
-	if (this == captured_widget)
-		captured_widget = nullptr;
-	if (this == focused_widget)
-		focused_widget = nullptr;
+    // Unreference from pointer capture
+    if (this == hovered_widget)
+        hovered_widget = nullptr;
+    if (this == captured_widget)
+        captured_widget = nullptr;
+    if (this == focused_widget)
+        focused_widget = nullptr;
 
-	// Unreference from touch info
+    // Unreference from touch info
     for (auto &kv : s_touch_info)
     {
         auto ti = kv.second;
-		if (this == ti->hovered_widget)
-			ti->hovered_widget = nullptr;
-		if (this == ti->captured_widget)
-			ti->captured_widget = nullptr;
+        if (this == ti->hovered_widget)
+            ti->hovered_widget = nullptr;
+        if (this == ti->captured_widget)
+            ti->captured_widget = nullptr;
     }
 
-	TBWidgetListener::InvokeWidgetDelete(this);
-	DeleteAllChildren();
+    TBWidgetListener::InvokeWidgetDelete(this);
+    DeleteAllChildren();
 
-	delete m_scroller;
-	delete m_layout_params;
+    delete m_scroller;
+    delete m_layout_params;
 
-	StopLongClickTimer();
+    StopLongClickTimer();
 
-	assert(!m_listeners.HasLinks()); // There's still listeners added to this widget!
+    assert(!m_listeners.HasLinks()); // There's still listeners added to this widget!
 }
 
 void TBWidget::SetRect(const TBRect &rect)
 {
-	if (m_rect.Equals(rect))
-		return;
+    if (m_rect.Equals(rect))
+        return;
 
-	TBRect old_rect = m_rect;
-	m_rect = rect;
+    TBRect old_rect = m_rect;
+    m_rect = rect;
 
-	if (old_rect.w != m_rect.w || old_rect.h != m_rect.h)
-		OnResized(old_rect.w, old_rect.h);
+    if (old_rect.w != m_rect.w || old_rect.h != m_rect.h)
+        OnResized(old_rect.w, old_rect.h);
 
-	Invalidate();
+    Invalidate();
 }
 
 void TBWidget::Invalidate()
 {
-	if (!GetVisibilityCombined() && !m_rect.IsEmpty())
-		return;
-	TBWidget *tmp = this;
-	while (tmp)
-	{
-		tmp->OnInvalid();
-		tmp = tmp->m_parent;
-	}
+    if (!GetVisibilityCombined() && !m_rect.IsEmpty())
+        return;
+    TBWidget *tmp = this;
+    while (tmp)
+    {
+        tmp->OnInvalid();
+        tmp = tmp->m_parent;
+    }
 }
 
 void TBWidget::InvalidateStates()
 {
-	update_widget_states = true;
-	InvalidateSkinStates();
+    update_widget_states = true;
+    InvalidateSkinStates();
 }
 
 void TBWidget::InvalidateSkinStates()
 {
-	update_skin_states = true;
+    update_skin_states = true;
 }
 
 void TBWidget::Die()
 {
-	if (m_packed.is_dying)
-		return;
-	m_packed.is_dying = true;
-	OnDie();
-	if (!TBWidgetListener::InvokeWidgetDying(this))
-	{
-		// No one was interested, so die immediately.
-		RemoveFromParent();
-		delete this;
-	}
+    if (m_packed.is_dying)
+        return;
+    m_packed.is_dying = true;
+    OnDie();
+    if (!TBWidgetListener::InvokeWidgetDying(this))
+    {
+        // No one was interested, so die immediately.
+        RemoveFromParent();
+        delete this;
+    }
 }
 
 TBWidget *TBWidget::GetWidgetByIDInternal(const TBID &id, const TB_TYPE_ID type_id)
 {
-	if (m_id == id && (!type_id || IsOfTypeId(type_id)))
-		return this;
-	for (TBWidget *child = GetFirstChild(); child; child = child->GetNext())
-	{
-		if (TBWidget *sub_child = child->GetWidgetByIDInternal(id, type_id))
-			return sub_child;
-	}
-	return nullptr;
+    if (m_id == id && (!type_id || IsOfTypeId(type_id)))
+        return this;
+    for (TBWidget *child = GetFirstChild(); child; child = child->GetNext())
+    {
+        if (TBWidget *sub_child = child->GetWidgetByIDInternal(id, type_id))
+            return sub_child;
+    }
+    return nullptr;
 }
 
 TBStr TBWidget::GetTextByID(const TBID &id)
 {
-	if (TBWidget *widget = GetWidgetByID(id))
-		return widget->GetText();
-	return "";
+    if (TBWidget *widget = GetWidgetByID(id))
+        return widget->GetText();
+    return "";
 }
 
 int TBWidget::GetValueByID(const TBID &id)
 {
-	if (TBWidget *widget = GetWidgetByID(id))
-		return widget->GetValue();
-	return 0;
+    if (TBWidget *widget = GetWidgetByID(id))
+        return widget->GetValue();
+    return 0;
 }
 
 void TBWidget::SetID(const TBID &id)
 {
-	m_id = id;
-	InvalidateSkinStates();
+    m_id = id;
+    InvalidateSkinStates();
 }
 
 void TBWidget::SetStateRaw(WIDGET_STATE state)
 {
-	if (m_state == state)
-		return;
-	m_state = state;
-	Invalidate();
-	InvalidateSkinStates();
+    if (m_state == state)
+        return;
+    m_state = state;
+    Invalidate();
+    InvalidateSkinStates();
 }
 
 void TBWidget::SetState(WIDGET_STATE state, bool on)
 {
-	SetStateRaw(on ? m_state | state : m_state & ~state);
+    SetStateRaw(on ? m_state | state : m_state & ~state);
 }
 
 WIDGET_STATE TBWidget::GetAutoState() const
 {
-	WIDGET_STATE state = m_state;
-	bool add_pressed_state = !cancel_click && this == captured_widget && this == hovered_widget;
-	if (add_pressed_state)
-		state |= WIDGET_STATE_PRESSED;
-	if (this == hovered_widget && (!m_packed.no_automatic_hover_state || add_pressed_state))
-		state |= WIDGET_STATE_HOVERED;
-	if (this == focused_widget && show_focus_state)
-		state |= WIDGET_STATE_FOCUSED;
+    WIDGET_STATE state = m_state;
+    bool add_pressed_state = !cancel_click && this == captured_widget && this == hovered_widget;
+    if (add_pressed_state)
+        state |= WIDGET_STATE_PRESSED;
+    if (this == hovered_widget && (!m_packed.no_automatic_hover_state || add_pressed_state))
+        state |= WIDGET_STATE_HOVERED;
+    if (this == focused_widget && show_focus_state)
+        state |= WIDGET_STATE_FOCUSED;
 #ifdef TB_ALWAYS_SHOW_EDIT_FOCUS
-	else if (this == focused_widget && IsOfType<TBEditField>())
-		state |= WIDGET_STATE_FOCUSED;
+    else if (this == focused_widget && IsOfType<TBEditField>())
+        state |= WIDGET_STATE_FOCUSED;
 #endif
-	return state;
+    return state;
 }
 
 //static
 void TBWidget::SetAutoFocusState(bool on)
 {
-	if (show_focus_state == on)
-		return;
-	show_focus_state = on;
-	if (focused_widget)
-		focused_widget->Invalidate();
+    if (show_focus_state == on)
+        return;
+    show_focus_state = on;
+    if (focused_widget)
+        focused_widget->Invalidate();
 }
 
 void TBWidget::SetOpacity(float opacity)
 {
-	opacity = Clamp(opacity, 0.f, 1.f);
-	if (m_opacity == opacity)
-		return;
-	if (opacity == 0) // Invalidate after setting opacity 0 will do nothing.
-		Invalidate();
-	m_opacity = opacity;
-	Invalidate();
+    opacity = Clamp(opacity, 0.f, 1.f);
+    if (m_opacity == opacity)
+        return;
+    if (opacity == 0) // Invalidate after setting opacity 0 will do nothing.
+        Invalidate();
+    m_opacity = opacity;
+    Invalidate();
 }
 
 void TBWidget::SetVisibility(WIDGET_VISIBILITY vis)
 {
-	if (m_packed.visibility == vis)
-		return;
+    if (m_packed.visibility == vis)
+        return;
 
-	// Invalidate after making it invisible will do nothing.
-	if (vis != WIDGET_VISIBILITY_VISIBLE)
-		Invalidate();
-	if (vis == WIDGET_VISIBILITY_GONE)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    // Invalidate after making it invisible will do nothing.
+    if (vis != WIDGET_VISIBILITY_VISIBLE)
+        Invalidate();
+    if (vis == WIDGET_VISIBILITY_GONE)
+        InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 
-	WIDGET_VISIBILITY old_vis = GetVisibility();
-	m_packed.visibility = vis;
+    WIDGET_VISIBILITY old_vis = GetVisibility();
+    m_packed.visibility = vis;
 
-	Invalidate();
-	if (old_vis == WIDGET_VISIBILITY_GONE)
-		InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    Invalidate();
+    if (old_vis == WIDGET_VISIBILITY_GONE)
+        InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 
-	OnVisibilityChanged();
+    OnVisibilityChanged();
 }
 
 WIDGET_VISIBILITY TBWidget::GetVisibility() const
 {
-	return static_cast<WIDGET_VISIBILITY>(m_packed.visibility);
+    return static_cast<WIDGET_VISIBILITY>(m_packed.visibility);
 }
 
 bool TBWidget::GetVisibilityCombined() const
 {
-	const TBWidget *tmp = this;
-	while (tmp)
-	{
-		if (tmp->GetOpacity() == 0 || tmp->GetVisibility() != WIDGET_VISIBILITY_VISIBLE)
-			return false;
-		tmp = tmp->m_parent;
-	}
-	return true;
+    const TBWidget *tmp = this;
+    while (tmp)
+    {
+        if (tmp->GetOpacity() == 0 || tmp->GetVisibility() != WIDGET_VISIBILITY_VISIBLE)
+            return false;
+        tmp = tmp->m_parent;
+    }
+    return true;
 }
 
 bool TBWidget::GetDisabled() const
 {
-	const TBWidget *tmp = this;
-	while (tmp)
-	{
-		if (tmp->GetState(WIDGET_STATE_DISABLED))
-			return true;
-		tmp = tmp->m_parent;
-	}
-	return false;
+    const TBWidget *tmp = this;
+    while (tmp)
+    {
+        if (tmp->GetState(WIDGET_STATE_DISABLED))
+            return true;
+        tmp = tmp->m_parent;
+    }
+    return false;
 }
 
 void TBWidget::AddChild(TBWidget *child, WIDGET_Z z, WIDGET_INVOKE_INFO info)
 {
-	AddChildRelative(child, z == WIDGET_Z_TOP ? WIDGET_Z_REL_AFTER : WIDGET_Z_REL_BEFORE, nullptr, info);
+    AddChildRelative(child, z == WIDGET_Z_TOP ? WIDGET_Z_REL_AFTER : WIDGET_Z_REL_BEFORE, nullptr, info);
 }
 
 void TBWidget::AddChildRelative(TBWidget *child, WIDGET_Z_REL z, TBWidget *reference, WIDGET_INVOKE_INFO info)
 {
-	assert(!child->m_parent);
-	child->m_parent = this;
+    assert(!child->m_parent);
+    child->m_parent = this;
 
-	if (reference)
-	{
-		if (z == WIDGET_Z_REL_BEFORE)
-			m_children.AddBefore(child, reference);
-		else
-			m_children.AddAfter(child, reference);
-	}
-	else // If there is no reference widget, before means first and after means last.
-	{
-		if (z == WIDGET_Z_REL_BEFORE)
-			m_children.AddFirst(child);
-		else
-			m_children.AddLast(child);
-	}
+    if (reference)
+    {
+        if (z == WIDGET_Z_REL_BEFORE)
+            m_children.AddBefore(child, reference);
+        else
+            m_children.AddAfter(child, reference);
+    }
+    else // If there is no reference widget, before means first and after means last.
+    {
+        if (z == WIDGET_Z_REL_BEFORE)
+            m_children.AddFirst(child);
+        else
+            m_children.AddLast(child);
+    }
 
-	if (info == WIDGET_INVOKE_INFO_NORMAL)
-	{
-		OnChildAdded(child);
-		child->OnAdded();
-		TBWidgetListener::InvokeWidgetAdded(this, child);
-	}
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
-	Invalidate();
-	InvalidateSkinStates();
+    if (info == WIDGET_INVOKE_INFO_NORMAL)
+    {
+        OnChildAdded(child);
+        child->OnAdded();
+        TBWidgetListener::InvokeWidgetAdded(this, child);
+    }
+    InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    Invalidate();
+    InvalidateSkinStates();
 }
 
 void TBWidget::RemoveChild(TBWidget *child, WIDGET_INVOKE_INFO info)
 {
-	assert(child->m_parent);
+    assert(child->m_parent);
 
-	if (info == WIDGET_INVOKE_INFO_NORMAL)
-	{
-		// If we're not being deleted and delete the focused widget, try
-		// to keep the focus in this widget by moving it to the next widget.
-		if (!m_packed.is_dying && child == focused_widget)
-			m_parent->MoveFocus(true);
+    if (info == WIDGET_INVOKE_INFO_NORMAL)
+    {
+        // If we're not being deleted and delete the focused widget, try
+        // to keep the focus in this widget by moving it to the next widget.
+        if (!m_packed.is_dying && child == focused_widget)
+            m_parent->MoveFocus(GetAxis(), true);
 
-		OnChildRemove(child);
-		child->OnRemove();
-		TBWidgetListener::InvokeWidgetRemove(this, child);
-	}
+        OnChildRemove(child);
+        child->OnRemove();
+        TBWidgetListener::InvokeWidgetRemove(this, child);
+    }
 
-	m_children.Remove(child);
-	child->m_parent = nullptr;
+    m_children.Remove(child);
+    child->m_parent = nullptr;
 
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
-	Invalidate();
-	InvalidateSkinStates();
+    InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    Invalidate();
+    InvalidateSkinStates();
 }
 
 void TBWidget::DeleteAllChildren()
 {
-	while (TBWidget *child = GetFirstChild())
-	{
-		RemoveChild(child);
-		delete child;
-	}
+    while (TBWidget *child = GetFirstChild())
+    {
+        RemoveChild(child);
+        delete child;
+    }
 }
 
 void TBWidget::SetZ(WIDGET_Z z)
 {
-	if (!m_parent)
-		return;
-	if (z == WIDGET_Z_TOP && this == m_parent->m_children.GetLast())
-		return; // Already at the top
-	if (z == WIDGET_Z_BOTTOM && this == m_parent->m_children.GetFirst())
-		return; // Already at the top
-	TBWidget *parent = m_parent;
-	parent->RemoveChild(this, WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	parent->AddChild(this, z, WIDGET_INVOKE_INFO_NO_CALLBACKS);
+    if (!m_parent)
+        return;
+    if (z == WIDGET_Z_TOP && this == m_parent->m_children.GetLast())
+        return; // Already at the top
+    if (z == WIDGET_Z_BOTTOM && this == m_parent->m_children.GetFirst())
+        return; // Already at the top
+    TBWidget *parent = m_parent;
+    parent->RemoveChild(this, WIDGET_INVOKE_INFO_NO_CALLBACKS);
+    parent->AddChild(this, z, WIDGET_INVOKE_INFO_NO_CALLBACKS);
 }
 
 void TBWidget::SetGravity(WIDGET_GRAVITY g)
 {
-	if (m_gravity == g)
-		return;
-	m_gravity = g;
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    if (m_gravity == g)
+        return;
+    m_gravity = g;
+    InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 }
 
 void TBWidget::SetSkinBg(const TBID &skin_bg, WIDGET_INVOKE_INFO info)
 {
-	if (skin_bg == m_skin_bg)
-		return;
+    if (skin_bg == m_skin_bg)
+        return;
 
-	// Set the skin and m_skin_bg_expected. During InvokeProcess, we will detect
-	// if any widget get a different element due to conditions and strong override.
-	// If that happens, OnSkinChanged will be called and m_skin_bg_expected updated to
-	// match that override.
-	m_skin_bg = skin_bg;
-	m_skin_bg_expected = skin_bg;
+    // Set the skin and m_skin_bg_expected. During InvokeProcess, we will detect
+    // if any widget get a different element due to conditions and strong override.
+    // If that happens, OnSkinChanged will be called and m_skin_bg_expected updated to
+    // match that override.
+    m_skin_bg = skin_bg;
+    m_skin_bg_expected = skin_bg;
 
-	Invalidate();
-	InvalidateSkinStates();
-	InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
+    Invalidate();
+    InvalidateSkinStates();
+    InvalidateLayout(INVALIDATE_LAYOUT_RECURSIVE);
 
-	if (info == WIDGET_INVOKE_INFO_NORMAL)
-		OnSkinChanged();
+    if (info == WIDGET_INVOKE_INFO_NORMAL)
+        OnSkinChanged();
 }
 
 TBSkinElement *TBWidget::GetSkinBgElement()
 {
-	TBWidgetSkinConditionContext context(this);
-	WIDGET_STATE state = GetAutoState();
-	return g_tb_skin->GetSkinElementStrongOverride(m_skin_bg, static_cast<SKIN_STATE>(state), context);
+    TBWidgetSkinConditionContext context(this);
+    WIDGET_STATE state = GetAutoState();
+    return g_tb_skin->GetSkinElementStrongOverride(m_skin_bg, static_cast<SKIN_STATE>(state), context);
 }
 
 TBWidget *TBWidget::FindScrollableWidget(bool scroll_x, bool scroll_y)
 {
-	TBWidget *candidate = this;
-	while (candidate)
-	{
-		ScrollInfo scroll_info = candidate->GetScrollInfo();
-		if ((scroll_x && scroll_info.CanScrollX()) ||
-			(scroll_y && scroll_info.CanScrollY()))
-			return candidate;
-		candidate = candidate->GetParent();
-	}
-	return nullptr;
+    TBWidget *candidate = this;
+    while (candidate)
+    {
+        ScrollInfo scroll_info = candidate->GetScrollInfo();
+        if ((scroll_x && scroll_info.CanScrollX()) ||
+            (scroll_y && scroll_info.CanScrollY()))
+            return candidate;
+        candidate = candidate->GetParent();
+    }
+    return nullptr;
 }
 
 TBScroller *TBWidget::FindStartedScroller()
 {
-	TBWidget *candidate = this;
-	while (candidate)
-	{
-		if (candidate->m_scroller && candidate->m_scroller->IsStarted())
-			return candidate->m_scroller;
-		candidate = candidate->GetParent();
-	}
-	return nullptr;
+    TBWidget *candidate = this;
+    while (candidate)
+    {
+        if (candidate->m_scroller && candidate->m_scroller->IsStarted())
+            return candidate->m_scroller;
+        candidate = candidate->GetParent();
+    }
+    return nullptr;
 }
 
 TBScroller *TBWidget::GetReadyScroller(bool scroll_x, bool scroll_y)
 {
-	if (TBScroller *scroller = FindStartedScroller())
-		return scroller;
-	// We didn't have any active scroller, so create one for the nearest scrollable parent.
-	if (TBWidget *scrollable_widget = FindScrollableWidget(scroll_x, scroll_y))
-		return scrollable_widget->GetScroller();
-	return nullptr;
+    if (TBScroller *scroller = FindStartedScroller())
+        return scroller;
+    // We didn't have any active scroller, so create one for the nearest scrollable parent.
+    if (TBWidget *scrollable_widget = FindScrollableWidget(scroll_x, scroll_y))
+        return scrollable_widget->GetScroller();
+    return nullptr;
 }
 
 TBScroller *TBWidget::GetScroller()
 {
-	if (!m_scroller)
-		m_scroller = new TBScroller(this);
-	return m_scroller;
+    if (!m_scroller)
+        m_scroller = new TBScroller(this);
+    return m_scroller;
 }
 
 void TBWidget::ScrollToSmooth(int x, int y)
 {
-	ScrollInfo info = GetScrollInfo();
-	int dx = x - info.x;
-	int dy = y - info.y;
-	if (TBScroller *scroller = GetReadyScroller(dx != 0, dy != 0))
-		scroller->OnScrollBy(dx, dy, false);
+    ScrollInfo info = GetScrollInfo();
+    int dx = x - info.x;
+    int dy = y - info.y;
+    if (TBScroller *scroller = GetReadyScroller(dx != 0, dy != 0))
+        scroller->OnScrollBy(dx, dy, false);
 }
 
 void TBWidget::ScrollBySmooth(int dx, int dy)
 {
-	// Clip the values to the scroll limits, so we don't
-	// scroll any parents.
-	//int x = CLAMP(info.x + dx, info.min_x, info.max_x);
-	//int y = CLAMP(info.y + dy, info.min_y, info.max_y);
-	//dx = x - info.x;
-	//dy = y - info.y;
-	if (!dx && !dy)
-		return;
+    // Clip the values to the scroll limits, so we don't
+    // scroll any parents.
+    //int x = CLAMP(info.x + dx, info.min_x, info.max_x);
+    //int y = CLAMP(info.y + dy, info.min_y, info.max_y);
+    //dx = x - info.x;
+    //dy = y - info.y;
+    if (!dx && !dy)
+        return;
 
-	if (TBScroller *scroller = GetReadyScroller(dx != 0, dy != 0))
-		scroller->OnScrollBy(dx, dy, true);
+    if (TBScroller *scroller = GetReadyScroller(dx != 0, dy != 0))
+        scroller->OnScrollBy(dx, dy, true);
 }
 
 void TBWidget::ScrollBy(int dx, int dy)
 {
-	ScrollInfo info = GetScrollInfo();
-	ScrollTo(info.x + dx, info.y + dy);
+    ScrollInfo info = GetScrollInfo();
+    ScrollTo(info.x + dx, info.y + dy);
 }
 
 void TBWidget::ScrollByRecursive(int &dx, int &dy)
 {
-	TBWidget *tmp = this;
-	while (tmp)
-	{
-		ScrollInfo old_info = tmp->GetScrollInfo();
-		tmp->ScrollTo(old_info.x + dx, old_info.y + dy);
-		ScrollInfo new_info = tmp->GetScrollInfo();
-		dx -= new_info.x - old_info.x;
-		dy -= new_info.y - old_info.y;
-		if (!dx && !dy)
-			break;
-		tmp = tmp->m_parent;
-	}
+    TBWidget *tmp = this;
+    while (tmp)
+    {
+        ScrollInfo old_info = tmp->GetScrollInfo();
+        tmp->ScrollTo(old_info.x + dx, old_info.y + dy);
+        ScrollInfo new_info = tmp->GetScrollInfo();
+        dx -= new_info.x - old_info.x;
+        dy -= new_info.y - old_info.y;
+        if (!dx && !dy)
+            break;
+        tmp = tmp->m_parent;
+    }
 }
 
 void TBWidget::ScrollIntoViewRecursive()
 {
-	TBRect scroll_to_rect = m_rect;
-	TBWidget *tmp = this;
-	while (tmp->m_parent)
-	{
-		tmp->m_parent->ScrollIntoView(scroll_to_rect);
-		scroll_to_rect.x += tmp->m_parent->m_rect.x;
-		scroll_to_rect.y += tmp->m_parent->m_rect.y;
-		tmp = tmp->m_parent;
-	}
+    TBRect scroll_to_rect = m_rect;
+    TBWidget *tmp = this;
+    while (tmp->m_parent)
+    {
+        tmp->m_parent->ScrollIntoView(scroll_to_rect);
+        scroll_to_rect.x += tmp->m_parent->m_rect.x;
+        scroll_to_rect.y += tmp->m_parent->m_rect.y;
+        tmp = tmp->m_parent;
+    }
 }
 
 void TBWidget::ScrollIntoView(const TBRect &rect)
 {
-	const ScrollInfo info = GetScrollInfo();
-	int new_x = info.x;
-	int new_y = info.y;
+    const ScrollInfo info = GetScrollInfo();
+    int new_x = info.x;
+    int new_y = info.y;
 
-	const TBRect visible_rect = GetPaddingRect().Offset(info.x, info.y);
+    const TBRect visible_rect = GetPaddingRect().Offset(info.x, info.y);
 
-	if (rect.y <= visible_rect.y)
-		new_y = rect.y;
-	else if (rect.y + rect.h > visible_rect.y + visible_rect.h)
-		new_y = rect.y + rect.h - visible_rect.h;
+    if (rect.y <= visible_rect.y)
+        new_y = rect.y;
+    else if (rect.y + rect.h > visible_rect.y + visible_rect.h)
+        new_y = rect.y + rect.h - visible_rect.h;
 
-	if (rect.x <= visible_rect.x)
-		new_x = rect.x;
-	else if (rect.x + rect.w > visible_rect.x + visible_rect.w)
-		new_x = rect.x + rect.w - visible_rect.w;
+    if (rect.x <= visible_rect.x)
+        new_x = rect.x;
+    else if (rect.x + rect.w > visible_rect.x + visible_rect.w)
+        new_x = rect.x + rect.w - visible_rect.w;
 
-	ScrollTo(new_x, new_y);
+    ScrollTo(new_x, new_y);
 }
 
 bool TBWidget::SetFocus(WIDGET_FOCUS_REASON reason, WIDGET_INVOKE_INFO info)
 {
-	if (focused_widget == this)
-		return true;
-	if (GetDisabled() || !GetIsFocusable() || !GetVisibilityCombined() || GetIsDying())
-		return false;
+    if (focused_widget == this)
+        return true;
+    if (GetDisabled() || !GetIsFocusable() || !GetVisibilityCombined() || GetIsDying())
+        return false;
 
-	// Update windows last focus
-	TBWindow *window = GetParentWindow();
-	if (window)
-	{
-		window->SetLastFocus(this);
-		// If not active, just return. We should get focus when the window is activated.
-		// Exception for windows that doesn't activate. They may contain focusable widgets.
-		if (!window->IsActive() && (window->GetSettings() & WINDOW_SETTINGS_CAN_ACTIVATE))
-			return true;
-	}
+    // Update windows last focus
+    TBWindow *window = GetParentWindow();
+    if (window)
+    {
+        window->SetLastFocus(this);
+        // If not active, just return. We should get focus when the window is activated.
+        // Exception for windows that doesn't activate. They may contain focusable widgets.
+        if (!window->IsActive())
+            return true;
+    }
 
-	if (focused_widget)
-	{
-		focused_widget->Invalidate();
-		focused_widget->InvalidateSkinStates();
-	}
+    if (focused_widget)
+    {
+        focused_widget->Invalidate();
+        focused_widget->InvalidateSkinStates();
+    }
 
-	TBWidgetSafePointer old_focus(focused_widget);
-	focused_widget = this;
+    TBWidgetSafePointer old_focus(focused_widget);
+    focused_widget = this;
 
-	Invalidate();
-	InvalidateSkinStates();
+    Invalidate();
+    InvalidateSkinStates();
 
-	if (reason == WIDGET_FOCUS_REASON_NAVIGATION)
-		ScrollIntoViewRecursive();
+    if (reason == WIDGET_FOCUS_REASON_NAVIGATION)
+        ScrollIntoViewRecursive();
 
-	if (info == WIDGET_INVOKE_INFO_NORMAL)
-	{
-		// A lot of weird bugs could happen if people mess with focus from OnFocusChanged.
-		// Take some precaution and detect if it change again after OnFocusChanged(false).
-		if (TBWidget *old = old_focus.Get())
-		{
-			// The currently focused widget still has the pressed state set by the emulated click
-			// (By keyboard), so unset it before we unfocus it so it's not stuck in pressed state.
-			if (old->m_packed.has_key_pressed_state)
-			{
-				old->SetState(WIDGET_STATE_PRESSED, false);
-				old->m_packed.has_key_pressed_state = false;
-			}
-			old->OnFocusChanged(false);
-		}
-		if (old_focus.Get())
-			TBWidgetListener::InvokeWidgetFocusChanged(old_focus.Get(), false);
-		if (focused_widget && focused_widget == this)
-			focused_widget->OnFocusChanged(true);
-		if (focused_widget && focused_widget == this)
-			TBWidgetListener::InvokeWidgetFocusChanged(focused_widget, true);
-	}
-	return true;
+    if (info == WIDGET_INVOKE_INFO_NORMAL)
+    {
+        // A lot of weird bugs could happen if people mess with focus from OnFocusChanged.
+        // Take some precaution and detect if it change again after OnFocusChanged(false).
+        if (TBWidget *old = old_focus.Get())
+        {
+            // The currently focused widget still has the pressed state set by the emulated click
+            // (By keyboard), so unset it before we unfocus it so it's not stuck in pressed state.
+            if (old->m_packed.has_key_pressed_state)
+            {
+                old->SetState(WIDGET_STATE_PRESSED, false);
+                old->m_packed.has_key_pressed_state = false;
+            }
+            old->OnFocusChanged(false);
+        }
+        if (old_focus.Get())
+            TBWidgetListener::InvokeWidgetFocusChanged(old_focus.Get(), false);
+        if (focused_widget && focused_widget == this)
+            focused_widget->OnFocusChanged(true);
+        if (focused_widget && focused_widget == this)
+            TBWidgetListener::InvokeWidgetFocusChanged(focused_widget, true);
+    }
+    return true;
 }
 
 bool TBWidget::SetFocusRecursive(WIDGET_FOCUS_REASON reason)
 {
-	// Search for a child widget that accepts focus
-	TBWidget *child = GetFirstChild();
-	while (child)
-	{
-		if (child->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN))
-			return true;
-		child = child->GetNextDeep(this);
-	}
-	return false;
+    // Search for a child widget that accepts focus
+    TBWidget *child = GetFirstChild();
+    while (child)
+    {
+        if (child->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN))
+            return true;
+        child = child->GetNextDeep(this);
+    }
+    return false;
 }
 
-bool TBWidget::MoveFocus(bool forward)
+TBWidget* TBWidget::FindParentAxisNav(AXIS axis, const TBWidget *boundingAncestor)
 {
-	TBWidget *origin = focused_widget;
-	if (!origin)
-		origin = this;
+    auto parent = m_parent;
+    auto lastFocused = this;
 
-	TBWidget *root = origin->GetParentWindow();
-	if (!root)
-		root = origin->GetParentRoot();
+    while (parent)
+    {
+        if (boundingAncestor == lastFocused)
+            return nullptr;
 
-	TBWidget *current = origin;
-	while (current)
-	{
-		current = forward ? current->GetNextDeep(root) : current->GetPrevDeep();
-		// Wrap around if we reach the end/beginning
-		if (!current || !root->IsAncestorOf(current))
-			current = forward ? root : root->GetLastLeaf();
-		// Break if we reached the origin again (we're not finding anything else)
-		if (current == origin)
-			break;
-		// Try to focus what we found
-		if (current && current->SetFocus(WIDGET_FOCUS_REASON_NAVIGATION))
-			return true;
-	}
-	return false;
+        if (parent->GetAxis() == axis)
+            return lastFocused;
+
+        lastFocused = parent;
+        parent = parent->m_parent;
+    }
+
+    return nullptr;
+}
+
+static bool TryFocusOnChildRecursive(tb::TBWidget *startFrom)
+{
+    if (!startFrom)
+        return false;
+
+    if (startFrom == TBWidget::focused_widget)
+        return false;
+    if (startFrom->SetFocus(WIDGET_FOCUS_REASON_NAVIGATION))
+        return true;
+
+    for (TBWidget *child = startFrom->GetFirstChild(); child; child = child->GetNext())
+    {
+        if (TryFocusOnChildRecursive(child))
+            return true;
+    }
+
+    return false;
+}
+
+bool TBWidget::MoveFocus(AXIS axis, bool forward)
+{
+    TBWidget *origin = focused_widget;
+    if (!origin)
+        origin = this;
+
+    TBWidget *root = origin->GetParentWindow();
+    if (!root)
+        root = origin->GetParentRoot();
+
+    if (TryFocusOnChildRecursive(origin))
+        return true;
+
+    auto lastFocused = origin->FindParentAxisNav(axis, root);
+    while (lastFocused)
+    {
+        TBWidget *ch;
+        if (forward)
+            ch = lastFocused->GetNext();
+        else
+            ch = lastFocused->GetPrev();
+
+        while (ch)
+        {
+            if (TryFocusOnChildRecursive(ch))
+                return true;
+
+            if (forward)
+                ch = ch->GetNext();
+            else
+                ch = ch->GetPrev();
+        }
+
+        if (lastFocused->m_parent)
+            lastFocused = lastFocused->m_parent->FindParentAxisNav(axis, root);
+    }
+
+    return false;
 }
 
 TBWidget *TBWidget::GetNextDeep(const TBWidget *bounding_ancestor) const
@@ -1654,15 +1707,22 @@ bool TBWidget::InvokeKey(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifie
 	}
 
 	// Move focus between widgets
-	if (down && !handled && special_key == TB_KEY_TAB)
-	{
-		handled = MoveFocus(!(modifierkeys & TB_SHIFT));
+    if (down && !handled)
+    {
+        if (key == 'd')
+            handled = MoveFocus(AXIS_X, true);
+        else if (key == 'a')
+            handled = MoveFocus(AXIS_X, false);
+        else if (key == 'w')
+            handled = MoveFocus(AXIS_Y, false);
+        else if (key == 's')
+            handled = MoveFocus(AXIS_Y, true);
 
-		// Show the focus when we move it by keyboard
-		if (handled)
-			SetAutoFocusState(true);
-	}
-	return handled;
+        // Show the focus when we move it by keyboard
+        if (handled)
+            SetAutoFocusState(true);
+    }
+    return handled;
 }
 
 void TBWidget::ReleaseCapture()

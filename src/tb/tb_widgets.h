@@ -570,7 +570,7 @@ public:
 	/** Move focus from the currently focused widget to another focusable widget. It will search
 		for a focusable widget in the same TBWindow (or top root if there is no window) forward or
 		backwards in the widget order. */
-	bool MoveFocus(bool forward);
+	bool MoveFocus(AXIS axis, bool forward);
 
 	/** Returns the child widget that contains the coordinate or nullptr if no one does. If include_children
 		is true, the search will recurse into the childrens children. */
@@ -593,6 +593,8 @@ public:
 	/** Get the value of a child widget with the given id, or 0 if there was no widget
 		with that id. */
 	int GetValueByID(const TBID &id);
+
+    TBWidget* FindParentAxisNav(AXIS axis, const TBWidget *boundingAncestor);
 
 	TBWidget *GetNextDeep(const TBWidget *bounding_ancestor = nullptr) const;
 	TBWidget *GetPrevDeep() const;
@@ -816,15 +818,15 @@ public:
 	// == Setter shared for many types of widgets ============
 
 	/** Set along which axis the content should be layouted. */
-	virtual void SetAxis(AXIS axis) {}
-	virtual AXIS GetAxis() const { return AXIS_X; }
+    virtual void SetAxis(AXIS axis) { m_widgetAxis = axis; }
+	virtual AXIS GetAxis() const { return m_widgetAxis; }
 
 	/** Set the value of this widget. Implemented by most widgets (that has a value).
 		Note: Some widgets also provide special setters with other types (such as double). */
 	virtual void SetValue(int value) {}
 	virtual int GetValue() { return 0; }
 
-	/** Set the value in double precision. It only makes sense to use this instead
+    /** Set the value in double precision. It only makes sense to use this instead
 		of SetValue() on widgets that store the value as double. F.ex TBScrollBar, TBSlider. */
 	virtual void SetValueDouble(double value) { SetValue((int) value); }
 
@@ -1010,6 +1012,8 @@ private:
 	LayoutParams *m_layout_params;	///< Layout params, or nullptr.
 	TBScroller *m_scroller;
 	TBLongClickTimer *m_long_click_timer;
+    AXIS m_widgetAxis;
+
 	union {
 		struct {
 			uint16 is_group_root : 1;

@@ -84,8 +84,8 @@ public:
 	TBLayout(AXIS axis = AXIS_X);
 
 	/** Set along which axis the content should be layouted */
-	virtual void SetAxis(AXIS axis);
-	virtual AXIS GetAxis() const { return m_axis; }
+	virtual void SetAxis(AXIS axis) override;
+	virtual AXIS GetAxis() const override { return m_axis; }
 
 	/** Set the spacing between widgets in this layout. Setting the default (SPACING_FROM_SKIN)
 		will make it use the spacing specified in the skin. */

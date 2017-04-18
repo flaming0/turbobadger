@@ -135,7 +135,6 @@ bool TBMessageWindow::OnEvent(const TBWidgetEvent &ev)
 	else if (ev.type == EVENT_TYPE_KEY_DOWN && ev.special_key == TB_KEY_ESC)
 	{
 		TBWidgetEvent click_ev(EVENT_TYPE_CLICK);
-		m_close_button.InvokeEvent(click_ev);
 		return true;
 	}
 	return TBWindow::OnEvent(ev);

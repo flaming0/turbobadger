@@ -44,12 +44,12 @@ TBTabContainer::TBTabContainer()
 	// Put the tab layout on top of the content in Z order so their skin can make
 	// a seamless overlap over the border. Control which side they are layouted
 	// to by calling SetLayoutOrder.
+    m_root_layout.AddChild(&m_tab_layout);
 	m_root_layout.AddChild(&m_content_root);
-	m_root_layout.AddChild(&m_tab_layout);
 	m_root_layout.SetAxis(AXIS_Y);
 	m_root_layout.SetGravity(WIDGET_GRAVITY_ALL);
 	m_root_layout.SetLayoutDistribution(LAYOUT_DISTRIBUTION_AVAILABLE);
-	m_root_layout.SetLayoutOrder(LAYOUT_ORDER_TOP_TO_BOTTOM);
+	//m_root_layout.SetLayoutOrder(LAYOUT_ORDER_TOP_TO_BOTTOM);
 	m_root_layout.SetSkinBg(TBIDC("TBTabContainer.rootlayout"));
 	m_tab_layout.SetLayoutDistributionPosition(LAYOUT_DISTRIBUTION_POSITION_CENTER);
 	m_tab_layout.SetSkinBg(TBIDC("TBTabContainer.tablayout_x"));
@@ -109,7 +109,7 @@ void TBTabContainer::SetAlignment(TB_ALIGN align)
 	bool horizontal = (align == TB_ALIGN_TOP || align == TB_ALIGN_BOTTOM);
 	bool reverse = (align == TB_ALIGN_TOP || align == TB_ALIGN_LEFT);
 	SetAxis(horizontal ? AXIS_Y : AXIS_X);
-	m_root_layout.SetLayoutOrder(reverse ? LAYOUT_ORDER_TOP_TO_BOTTOM : LAYOUT_ORDER_BOTTOM_TO_TOP);
+	//m_root_layout.SetLayoutOrder(reverse ? LAYOUT_ORDER_TOP_TO_BOTTOM : LAYOUT_ORDER_BOTTOM_TO_TOP);
 	m_tab_layout.SetLayoutPosition(reverse ? LAYOUT_POSITION_RIGHT_BOTTOM : LAYOUT_POSITION_LEFT_TOP);
 	m_align = align;
 }

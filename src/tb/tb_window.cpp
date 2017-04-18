@@ -11,27 +11,12 @@ namespace tb {
 // == TBWindow ==========================================================================
 
 TBWindow::TBWindow()
-	: m_settings(WINDOW_SETTINGS_DEFAULT)
 {
-	SetSkinBg(TBIDC("TBWindow"), WIDGET_INVOKE_INFO_NO_CALLBACKS);
-	AddChild(&m_mover);
-	AddChild(&m_resizer);
-	m_mover.SetSkinBg(TBIDC("TBWindow.mover"));
-	m_mover.AddChild(&m_textfield);
-	m_textfield.SetIgnoreInput(true);
-	m_mover.AddChild(&m_close_button);
-	m_close_button.SetSkinBg(TBIDC("TBWindow.close"));
-	m_close_button.SetIsFocusable(false);
-	m_close_button.SetID(TBIDC("TBWindow.close"));
 	SetIsGroupRoot(true);
 }
 
 TBWindow::~TBWindow()
 {
-	m_resizer.RemoveFromParent();
-	m_mover.RemoveFromParent();
-	m_close_button.RemoveFromParent();
-	m_textfield.RemoveFromParent();
 }
 
 TBRect TBWindow::GetResizeToFitContentRect(RESIZE_FIT fit)
@@ -81,7 +66,7 @@ TBWindow *TBWindow::GetTopMostOtherWindow(bool only_activable_windows)
 		if (sibling != this)
 			other_window = TBSafeCast<TBWindow>(sibling);
 
-		if (only_activable_windows && other_window && !(other_window->m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+		if (only_activable_windows && other_window)
 			other_window = nullptr;
 
 		sibling = sibling->GetPrev();
@@ -91,7 +76,7 @@ TBWindow *TBWindow::GetTopMostOtherWindow(bool only_activable_windows)
 
 void TBWindow::Activate()
 {
-	if (!GetParent() || !(m_settings & WINDOW_SETTINGS_CAN_ACTIVATE))
+	if (!GetParent())
 		return;
 	if (IsActive())
 	{
@@ -139,51 +124,10 @@ void TBWindow::DeActivate()
 void TBWindow::SetWindowActiveState(bool active)
 {
 	SetState(WIDGET_STATE_SELECTED, active);
-	m_mover.SetState(WIDGET_STATE_SELECTED, active);
-}
-
-void TBWindow::SetSettings(WINDOW_SETTINGS settings)
-{
-	if (settings == m_settings)
-		return;
-	m_settings = settings;
-
-	if (settings & WINDOW_SETTINGS_TITLEBAR)
-	{
-		if (!m_mover.GetParent())
-			AddChild(&m_mover);
-	}
-	else if (!(settings & WINDOW_SETTINGS_TITLEBAR))
-	{
-		m_mover.RemoveFromParent();
-	}
-	if (settings & WINDOW_SETTINGS_RESIZABLE)
-	{
-		if (!m_resizer.GetParent())
-			AddChild(&m_resizer);
-	}
-	else if (!(settings & WINDOW_SETTINGS_RESIZABLE))
-	{
-		m_resizer.RemoveFromParent();
-	}
-	if (settings & WINDOW_SETTINGS_CLOSE_BUTTON)
-	{
-		if (!m_close_button.GetParent())
-			m_mover.AddChild(&m_close_button);
-	}
-	else if (!(settings & WINDOW_SETTINGS_CLOSE_BUTTON))
-	{
-		m_close_button.RemoveFromParent();
-	}
-
-	// FIX: invalidate layout / resize window!
-	Invalidate();
 }
 
 int TBWindow::GetTitleHeight()
 {
-	if (m_settings & WINDOW_SETTINGS_TITLEBAR)
-		return m_mover.GetPreferredSize().pref_h;
 	return 0;
 }
 
@@ -215,17 +159,6 @@ PreferredSize TBWindow::OnCalculatePreferredSize(const SizeConstraints &constrai
 	return ps;
 }
 
-bool TBWindow::OnEvent(const TBWidgetEvent &ev)
-{
-	if (ev.target == &m_close_button)
-	{
-		if (ev.type == EVENT_TYPE_CLICK)
-			Close();
-		return true;
-	}
-	return false;
-}
-
 void TBWindow::OnAdded()
 {
 	// If we was added last, call Activate to update status etc.
@@ -240,36 +173,6 @@ void TBWindow::OnRemove()
 	// Active the top most other window
 	if (TBWindow *active_window = GetTopMostOtherWindow(true))
 		active_window->Activate();
-}
-
-void TBWindow::OnChildAdded(TBWidget *child)
-{
-	m_resizer.SetZ(WIDGET_Z_TOP);
-}
-
-void TBWindow::OnResized(int old_w, int old_h)
-{
-	// Apply gravity on children
-	TBWidget::OnResized(old_w, old_h);
-	// Manually move our own decoration children
-	// FIX: Put a layout in the TBMover so we can add things there nicely.
-	const int title_height = GetTitleHeight();
-	m_mover.SetRect(TBRect(0, 0, GetRect().w, title_height));
-
-	PreferredSize ps = m_resizer.GetPreferredSize();
-	m_resizer.SetRect(TBRect(GetRect().w - ps.pref_w, GetRect().h - ps.pref_h, ps.pref_w, ps.pref_h));
-
-	const TBRect mover_rect = m_mover.GetRect();
-	const TBRect mover_padding_rect = m_mover.GetPaddingRect();
-	const int mover_padding_right = mover_rect.x + mover_rect.w - (mover_padding_rect.x + mover_padding_rect.w);
-	const int button_w = m_close_button.GetPreferredSize().pref_w;
-	const int button_h = Max(m_close_button.GetPreferredSize().pref_h, mover_padding_rect.h);
-	m_close_button.SetRect(TBRect(mover_padding_rect.x + mover_padding_rect.w - button_w, mover_padding_rect.y, button_w, button_h));
-
-	TBRect title_rect = mover_padding_rect;
-	if (m_settings & WINDOW_SETTINGS_CLOSE_BUTTON)
-		title_rect.w -= mover_padding_right + button_w;
-	m_textfield.SetRect(title_rect);
 }
 
 } // namespace tb
