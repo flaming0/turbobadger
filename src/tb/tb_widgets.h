@@ -991,6 +991,8 @@ public:
 		by GetCalculatedFontDescription) */
 	TBFontFace *GetFont() const;
 
+    void SetUseOpacityWhenDisabled(bool use) { m_useOpacityWhenDisabled = use; }
+
 private:
 	friend class TBWidgetListener;	///< It does iteration of m_listeners for us.
 	TBWidget *m_parent;				///< The parent of this widget
@@ -1013,6 +1015,7 @@ private:
 	TBScroller *m_scroller;
 	TBLongClickTimer *m_long_click_timer;
     AXIS m_widgetAxis;
+    bool m_useOpacityWhenDisabled;
 
 	union {
 		struct {

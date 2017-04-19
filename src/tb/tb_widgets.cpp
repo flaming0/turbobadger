@@ -106,6 +106,7 @@ TBWidget::TBWidget()
     , m_scroller(nullptr)
     , m_long_click_timer(nullptr)
     , m_widgetAxis(AXIS_X)
+    , m_useOpacityWhenDisabled(true)
     , m_packed_init(0)
 {
 #ifdef TB_RUNTIME_DEBUG_INFO
@@ -664,19 +665,20 @@ TBWidget* TBWidget::FindParentAxisNav(AXIS axis, const TBWidget *boundingAncesto
     return nullptr;
 }
 
-static bool TryFocusOnChildRecursive(tb::TBWidget *startFrom)
+static bool TryFocusOnChildRecursive(tb::TBWidget *startFrom, bool forward)
 {
     if (!startFrom)
         return false;
 
-    if (startFrom == TBWidget::focused_widget)
-        return false;
-    if (startFrom->SetFocus(WIDGET_FOCUS_REASON_NAVIGATION))
-        return true;
+    if (startFrom != TBWidget::focused_widget)
+    {
+        if (startFrom->SetFocus(WIDGET_FOCUS_REASON_NAVIGATION))
+            return true;
+    }
 
     for (TBWidget *child = startFrom->GetFirstChild(); child; child = child->GetNext())
     {
-        if (TryFocusOnChildRecursive(child))
+        if (TryFocusOnChildRecursive(child, forward))
             return true;
     }
 
@@ -693,7 +695,7 @@ bool TBWidget::MoveFocus(AXIS axis, bool forward)
     if (!root)
         root = origin->GetParentRoot();
 
-    if (TryFocusOnChildRecursive(origin))
+    if (TryFocusOnChildRecursive(origin, true))
         return true;
 
     auto lastFocused = origin->FindParentAxisNav(axis, root);
@@ -707,7 +709,7 @@ bool TBWidget::MoveFocus(AXIS axis, bool forward)
 
         while (ch)
         {
-            if (TryFocusOnChildRecursive(ch))
+            if (TryFocusOnChildRecursive(ch, forward))
                 return true;
 
             if (forward)
@@ -1229,8 +1231,11 @@ float TBWidget::CalculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin
 	float opacity = m_opacity;
 	if (skin_element)
 		opacity *= skin_element->opacity;
-	if (state & WIDGET_STATE_DISABLED)
-		opacity *= g_tb_skin->GetDefaultDisabledOpacity();
+    if (state & WIDGET_STATE_DISABLED)
+    {
+        if (m_useOpacityWhenDisabled)
+            opacity *= g_tb_skin->GetDefaultDisabledOpacity();
+    }
 	return Clamp(opacity, 0.f, 1.f);
 }
 
