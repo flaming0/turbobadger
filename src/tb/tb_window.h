@@ -87,11 +87,17 @@ public:
 
 	virtual void OnAdded();
 	virtual void OnRemove();
+    bool OnEvent(const tb::TBWidgetEvent &ev) override;
+
+    void SetCloseOnEsc(bool close) { m_closeOnEsc = close; }
+
 protected:
 	TBWidgetSafePointer m_last_focus;
 	TBWindow *GetTopMostOtherWindow(bool only_activable_windows);
 	void SetWindowActiveState(bool active);
 	void DeActivate();
+
+    bool m_closeOnEsc = true;
 };
 
 } // namespace tb

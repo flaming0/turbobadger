@@ -66,8 +66,8 @@ TBWindow *TBWindow::GetTopMostOtherWindow(bool only_activable_windows)
 		if (sibling != this)
 			other_window = TBSafeCast<TBWindow>(sibling);
 
-		if (only_activable_windows && other_window)
-			other_window = nullptr;
+		//if (only_activable_windows && other_window)
+		//	other_window = nullptr;
 
 		sibling = sibling->GetPrev();
 	}
@@ -173,6 +173,20 @@ void TBWindow::OnRemove()
 	// Active the top most other window
 	if (TBWindow *active_window = GetTopMostOtherWindow(true))
 		active_window->Activate();
+}
+
+bool TBWindow::OnEvent(const tb::TBWidgetEvent &ev)
+{
+    if (m_closeOnEsc)
+    {
+        if (ev.type == tb::EVENT_TYPE_KEY_DOWN && ev.special_key == tb::TB_KEY_ESC)
+        {
+            Close();
+            return true;
+        }
+    }
+
+    return tb::TBWidget::OnEvent(ev);
 }
 
 } // namespace tb
