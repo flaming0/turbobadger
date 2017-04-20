@@ -379,7 +379,10 @@ void TBWidget::RemoveChild(TBWidget *child, WIDGET_INVOKE_INFO info)
         // If we're not being deleted and delete the focused widget, try
         // to keep the focus in this widget by moving it to the next widget.
         if (!m_packed.is_dying && child == focused_widget)
-            m_parent->MoveFocus(GetAxis(), true);
+        {
+            if (!m_parent->MoveFocus(AXIS_ANY, true))
+                m_parent->MoveFocus(AXIS_ANY, false);
+        }
 
         OnChildRemove(child);
         child->OnRemove();
@@ -582,14 +585,27 @@ bool TBWidget::SetFocus(WIDGET_FOCUS_REASON reason, WIDGET_INVOKE_INFO info)
         return false;
 
     // Update windows last focus
-    TBWindow *window = GetParentWindow();
-    if (window)
+
+    auto lay = GetParentLayout();
+    if (lay)
     {
-        window->SetLastFocus(this);
-        // If not active, just return. We should get focus when the window is activated.
-        // Exception for windows that doesn't activate. They may contain focusable widgets.
-        if (!window->IsActive())
-            return true;
+        lay->SetLastFocus(this);
+    }
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    else
+    {
+        TBWindow *window = GetParentWindow();
+        if (window)
+        {
+            window->SetLastFocus(this);
+            // If not active, just return. We should get focus when the window is activated.
+            // Exception for windows that doesn't activate. They may contain focusable widgets.
+            if (!window->IsActive())
+                return true;
+        }
     }
 
     if (focused_widget)
@@ -655,7 +671,7 @@ TBWidget* TBWidget::FindParentAxisNav(AXIS axis, const TBWidget *boundingAncesto
         if (boundingAncestor == lastFocused)
             return nullptr;
 
-        if (parent->GetAxis() == axis)
+        if (parent->GetAxis() == axis || (axis == AXIS_ANY))
             return lastFocused;
 
         lastFocused = parent;
@@ -669,6 +685,12 @@ static bool TryFocusOnChildRecursive(tb::TBWidget *startFrom, bool forward)
 {
     if (!startFrom)
         return false;
+
+    if (auto l = startFrom->SafeCastTo<TBLayout>())
+    {
+        if (l->GetFocusGroup() && l->ensureFocus())
+            return true;
+    }
 
     if (startFrom != TBWidget::focused_widget)
     {
@@ -852,6 +874,21 @@ TBWindow *TBWidget::GetParentWindow()
 	while (tmp && !tmp->IsOfType<TBWindow>())
 		tmp = tmp->m_parent;
 	return static_cast<TBWindow *>(tmp);
+}
+
+TBLayout *TBWidget::GetParentLayout()
+{
+    TBWidget *tmp = this;
+    while (tmp)
+    {
+        if (auto l = tmp->SafeCastTo<TBLayout>())
+        {
+            if (l->GetFocusGroup())
+                return l;
+        }
+        tmp = tmp->m_parent;
+    }
+    return static_cast<TBLayout *>(tmp);
 }
 
 void TBWidget::AddListener(TBWidgetListener *listener)

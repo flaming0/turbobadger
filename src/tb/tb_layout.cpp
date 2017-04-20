@@ -524,4 +524,17 @@ TBWidget::ScrollInfo TBLayout::GetScrollInfo()
 	return info;
 }
 
+bool TBLayout::ensureFocus()
+{
+    // If we already have focus, we're done.
+    if (focused_widget && IsAncestorOf(focused_widget))
+        return true;
+
+    // Focus last focused widget (if we have one)
+    bool success = false;
+    if (m_lastFocus.Get())
+        success = m_lastFocus.Get()->SetFocus(WIDGET_FOCUS_REASON_UNKNOWN);
+    return success;
+}
+
 } // namespace tb

@@ -204,6 +204,8 @@ void TBEditField::OnInflate(const INFLATE_INFO &info)
 TB_WIDGET_FACTORY(TBLayout, TBValue::TYPE_NULL, WIDGET_Z_TOP) {}
 void TBLayout::OnInflate(const INFLATE_INFO &info)
 {
+    SetFocusGroup(info.node->GetValueInt("focus-group", GetFocusGroup()) ? true : false);
+
 	if (const char *spacing = info.node->GetValueString("spacing", nullptr))
 		SetSpacing(g_tb_skin->GetDimensionConverter()->GetPxFromString(spacing, SPACING_FROM_SKIN));
 	SetGravity(WIDGET_GRAVITY_ALL);

@@ -7,6 +7,7 @@
 #define TB_LAYOUT_H
 
 #include "tb_widgets.h"
+#include "tb_widgets_listener.h"
 
 namespace tb {
 
@@ -133,6 +134,12 @@ public:
 	virtual void GetChildTranslation(int &x, int &y) const;
 	virtual void ScrollTo(int x, int y);
 	virtual TBWidget::ScrollInfo GetScrollInfo();
+
+    void SetLastFocus(TBWidget *last_focus) { m_lastFocus.Set(last_focus); }
+    bool ensureFocus();
+    bool GetFocusGroup() const { return m_focusGroup; }
+    void SetFocusGroup(bool group) { m_focusGroup = group; }
+
 protected:
 	AXIS m_axis;
 	int m_spacing;
@@ -151,6 +158,7 @@ protected:
 		} m_packed;
 		uint32 m_packed_init;
 	};
+    bool m_focusGroup = false;
 	void ValidateLayout(const SizeConstraints &constraints, PreferredSize *calculate_ps = nullptr);
 	bool QualifyForExpansion(WIDGET_GRAVITY gravity) const;
 	int GetWantedHeight(WIDGET_GRAVITY gravity, const PreferredSize &ps, int available_height) const;
@@ -159,6 +167,9 @@ protected:
 	int CalculateSpacing();
 	TBWidget *GetFirstInLayoutOrder() const;
 	TBWidget *GetNextInLayoutOrder(TBWidget *child) const;
+
+private:
+    TBWidgetSafePointer m_lastFocus;
 };
 
 };

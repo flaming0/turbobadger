@@ -21,6 +21,7 @@ class TBWidget;
 class TBFontFace;
 class TBScroller;
 class TBWidgetListener;
+class TBLayout;
 class TBLongClickTimer;
 struct INFLATE_INFO;
 
@@ -200,6 +201,7 @@ MAKE_ENUM_FLAG_COMBO(WIDGET_GRAVITY);
 enum AXIS {
 	AXIS_X, ///< Horizontal layout
 	AXIS_Y, ///< Vertical layout
+    AXIS_ANY
 };
 
 /** Defines how the size in one axis depend on the other axis when a widgets size is
@@ -740,6 +742,7 @@ public:
 	/** Get the closest parent widget that is a TBWindow or nullptr if there is none.
 		If this widget is a window itself, this will be returned. */
 	TBWindow *GetParentWindow();
+    TBLayout *GetParentLayout();
 
 	/** Get the parent widget, or nullptr if this widget is not added. */
 	inline TBWidget *GetParent() const { return m_parent; }
