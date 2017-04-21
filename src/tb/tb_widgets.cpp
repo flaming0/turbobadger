@@ -1749,7 +1749,7 @@ bool TBWidget::InvokeKey(int key, SPECIAL_KEY special_key, MODIFIER_KEYS modifie
 	}
 
 	// Move focus between widgets
-    if (down && !handled)
+    if (!down && !handled)
     {
         if (key == 'd')
             handled = MoveFocus(AXIS_X, true);
