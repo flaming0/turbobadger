@@ -242,14 +242,14 @@ bool TBEditField::OnEvent(const TBWidgetEvent &ev)
 		return m_style_edit.MouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
 										1, TB_MODIFIER_NONE, ev.touch);
 	}
-	else if (ev.type == EVENT_TYPE_KEY_DOWN)
+	/*else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{
 		return m_style_edit.KeyDown(ev.key, ev.special_key, ev.modifierkeys);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_UP)
 	{
 		return true;
-	}
+	}*/
 	else if ((ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("popupmenu")) ||
 			(ev.type == EVENT_TYPE_SHORTCUT))
 	{

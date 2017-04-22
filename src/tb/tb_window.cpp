@@ -111,6 +111,8 @@ bool TBWindow::EnsureFocus()
 	// We didn't have one or failed, so try focus any child.
 	if (!success)
 		success = SetFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
+    if (success)
+        SetAutoFocusState(true);
 	return success;
 }
 
