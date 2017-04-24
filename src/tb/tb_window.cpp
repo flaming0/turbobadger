@@ -112,7 +112,10 @@ bool TBWindow::EnsureFocus()
 	if (!success)
 		success = SetFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
     if (success)
-        SetAutoFocusState(true);
+    {
+        if (CheckCanFocus && CheckCanFocus())
+            SetAutoFocusState(true);
+    }
 	return success;
 }
 
@@ -190,5 +193,7 @@ bool TBWindow::OnEvent(const tb::TBWidgetEvent &ev)
 
     return tb::TBWidget::OnEvent(ev);
 }
+
+std::function<bool()> TBWindow::CheckCanFocus;
 
 } // namespace tb

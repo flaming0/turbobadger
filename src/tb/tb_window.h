@@ -8,6 +8,7 @@
 
 #include "tb_widgets_common.h"
 #include "tb_widgets_listener.h"
+#include <functional>
 
 namespace tb {
 
@@ -90,6 +91,9 @@ public:
     bool OnEvent(const tb::TBWidgetEvent &ev) override;
 
     void SetCloseOnEsc(bool close) { m_closeOnEsc = close; }
+
+public:
+    static std::function<bool()> CheckCanFocus;
 
 protected:
 	TBWidgetSafePointer m_last_focus;
