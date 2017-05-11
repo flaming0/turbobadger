@@ -17,17 +17,26 @@ namespace tb {
 namespace {
 template<typename T>
 void
-hash_combine(size_t &seed, T const &key) {
+hash_combine(uint32_t &seed, T const &key) {
     std::hash<T> hasher;
     seed ^= hasher(key) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 template<typename T1, typename T2>
-size_t DoHash(std::pair<T1, T2> const &p)
+uint32_t DoHash(std::pair<T1, T2> const &p)
 {
-    size_t seed(0);
+    uint32_t seed(0);
     hash_combine(seed, p.first);
     hash_combine(seed, p.second);
+    return seed;
+}
+
+uint32_t DoHash2(uint32_t a, uint32_t b, uint32_t c)
+{
+    uint32_t seed(0);
+    hash_combine(seed, a);
+    hash_combine(seed, b);
+    hash_combine(seed, c);
     return seed;
 }
 
@@ -372,8 +381,7 @@ void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 
 TBID TBFontFace::GetHashId(UCS4 cp) const
 {
-    auto tmp = std::make_pair(cp, m_font_desc.GetFontFaceID().operator tb::uint32());
-    return DoHash(tmp);
+    return DoHash2(cp, m_font_desc.GetID(), m_font_desc.GetSize());
 }
 
 TBFontGlyph *TBFontFace::GetGlyph(UCS4 cp, bool render_if_needed)
