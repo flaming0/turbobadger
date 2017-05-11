@@ -27,7 +27,7 @@ protected:
 public:
 	TBStrC(const char *str) : s(const_cast<char *>(str)) {}
 
-	inline int Length() const							{ return strlen(s); }
+	inline size_t Length() const							{ return strlen(s); }
 	inline bool IsEmpty() const							{ return s[0] == 0; }
 
 	inline int Compare(const char* str) const			{ return strcmp(s, str); }

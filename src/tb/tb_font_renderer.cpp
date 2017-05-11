@@ -6,11 +6,32 @@
 #include "tb_font_renderer.h"
 #include "tb_renderer.h"
 #include "tb_system.h"
+#include "tb_font_desc.h"
 #include "tb_skin.h"
 #include <math.h>
 #include <functional>
+#include <utility>
 
 namespace tb {
+
+namespace {
+template<typename T>
+void
+hash_combine(size_t &seed, T const &key) {
+    std::hash<T> hasher;
+    seed ^= hasher(key) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+template<typename T1, typename T2>
+size_t DoHash(std::pair<T1, T2> const &p)
+{
+    size_t seed(0);
+    hash_combine(seed, p.first);
+    hash_combine(seed, p.second);
+    return seed;
+}
+
+}
 
 // ================================================================================================
 
@@ -351,7 +372,8 @@ void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 
 TBID TBFontFace::GetHashId(UCS4 cp) const
 {
-    return cp * 31 + std::hash<uint32>{}(m_font_desc.GetFontFaceID());
+    auto tmp = std::make_pair(cp, m_font_desc.GetFontFaceID().operator tb::uint32());
+    return DoHash(tmp);
 }
 
 TBFontGlyph *TBFontFace::GetGlyph(UCS4 cp, bool render_if_needed)
