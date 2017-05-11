@@ -8,6 +8,7 @@
 #include "tb_system.h"
 #include "tb_skin.h"
 #include <math.h>
+#include <functional>
 
 namespace tb {
 
@@ -350,7 +351,7 @@ void TBFontFace::RenderGlyph(TBFontGlyph *glyph)
 
 TBID TBFontFace::GetHashId(UCS4 cp) const
 {
-	return cp * 31 + m_font_desc.GetFontFaceID();
+    return cp * 31 + std::hash<uint32>{}(m_font_desc.GetFontFaceID());
 }
 
 TBFontGlyph *TBFontFace::GetGlyph(UCS4 cp, bool render_if_needed)

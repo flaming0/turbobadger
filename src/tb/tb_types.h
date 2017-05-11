@@ -11,16 +11,17 @@
 #include <tb_config.h>
 
 #include <string.h>
+#include <cstdint>
 
 namespace tb {
 
-typedef signed char int8;
-typedef signed short int16;
-typedef signed int int32;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
 
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
 
 template <class T>
 T Max(const T& left, const T& right) { return left > right ? left : right; }

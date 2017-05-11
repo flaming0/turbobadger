@@ -1,7 +1,9 @@
 #ifndef BASIC_UTF8_H
 #define BASIC_UTF8_H
 
-typedef unsigned int UCS4;
+#include <cstdint>
+
+typedef uint32_t UCS4;
 
 namespace utf8 {
 
