@@ -15,20 +15,32 @@
 namespace tb {
 
 namespace {
-template<typename T>
-void
-hash_combine(uint32_t &seed, T const &key) {
-    std::hash<T> hasher;
-    seed ^= hasher(key) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
 
-template<typename T1, typename T2>
-uint32_t DoHash(std::pair<T1, T2> const &p)
-{
-    uint32_t seed(0);
-    hash_combine(seed, p.first);
-    hash_combine(seed, p.second);
-    return seed;
+	struct Bitwise_hash
+	{
+		uint32_t _Hash_seq(const uint8_t *_First, uint32_t _Count) const
+		{
+			const uint32_t _FNV_offset_basis = 2166136261U;
+			const uint32_t _FNV_prime = 16777619U;
+
+			uint32_t _Val = _FNV_offset_basis;
+			for (uint32_t _Next = 0; _Next < _Count; ++_Next)
+			{	// fold in another byte
+				_Val ^= (uint32_t)_First[_Next];
+				_Val *= _FNV_prime;
+			}
+			return (_Val);
+		}
+
+		uint32_t operator()(uint32_t keyval) const
+		{
+			return (_Hash_seq((const uint8_t *)&keyval, sizeof (uint32_t)));
+		}
+	};
+
+void hash_combine(uint32_t &seed, uint32_t key) {
+	Bitwise_hash hasher;
+    seed ^= hasher(key) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 uint32_t DoHash2(uint32_t a, uint32_t b, uint32_t c)
