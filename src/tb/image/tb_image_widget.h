@@ -35,7 +35,7 @@ public:
 	virtual void OnPaint(const PaintProps &paint_props);
 
     void SetIsFlipped(bool flipped) { m_isFlipped = flipped; }
-private:
+protected:
 	TBImage m_image;
     bool m_isFlipped = false;
 };
