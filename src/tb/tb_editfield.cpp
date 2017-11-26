@@ -14,7 +14,7 @@
 #include "tb_font_renderer.h"
 #include "tb_skin_util.h"
 
-namespace tb {
+namespace tb { 
 
 const int CARET_BLINK_TIME = 500;
 const int SELECTION_SCROLL_DELAY = 1000/30;
@@ -37,6 +37,9 @@ TBEditField::TBEditField()
 	, m_adapt_to_content_size(false)
 	, m_virtual_width(250)
 {
+#ifdef WIN32
+    SetIsFocusable(true);
+#endif
 	SetWantLongClick(true);
 	AddChild(&m_scrollbar_x);
 	AddChild(&m_scrollbar_y);
@@ -242,14 +245,16 @@ bool TBEditField::OnEvent(const TBWidgetEvent &ev)
 		return m_style_edit.MouseUp(TBPoint(ev.target_x - padding_rect.x, ev.target_y - padding_rect.y),
 										1, TB_MODIFIER_NONE, ev.touch);
 	}
-	/*else if (ev.type == EVENT_TYPE_KEY_DOWN)
+#ifdef WIN32
+	else if (ev.type == EVENT_TYPE_KEY_DOWN)
 	{
 		return m_style_edit.KeyDown(ev.key, ev.special_key, ev.modifierkeys);
 	}
 	else if (ev.type == EVENT_TYPE_KEY_UP)
 	{
 		return true;
-	}*/
+	}
+#endif
 	else if ((ev.type == EVENT_TYPE_CLICK && ev.target->GetID() == TBIDC("popupmenu")) ||
 			(ev.type == EVENT_TYPE_SHORTCUT))
 	{

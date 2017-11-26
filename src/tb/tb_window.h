@@ -81,7 +81,7 @@ public:
 
 	/** Get the height of the title bar (or 0 if the WINDOW_SETTINGS say this window
 		shouldn't have any title bar) */
-	int GetTitleHeight();
+	virtual int GetTitleHeight();
 
 	virtual TBRect GetPaddingRect();
 	virtual PreferredSize OnCalculatePreferredSize(const SizeConstraints &constraints);
@@ -98,7 +98,7 @@ public:
 protected:
 	TBWidgetSafePointer m_last_focus;
 	TBWindow *GetTopMostOtherWindow(bool only_activable_windows);
-	void SetWindowActiveState(bool active);
+	virtual void SetWindowActiveState(bool active);
 	void DeActivate();
 
     bool m_closeOnEsc = true;
