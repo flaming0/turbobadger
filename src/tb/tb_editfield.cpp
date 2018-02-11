@@ -37,9 +37,9 @@ TBEditField::TBEditField()
 	, m_adapt_to_content_size(false)
 	, m_virtual_width(250)
 {
-#ifdef WIN32
-    SetIsFocusable(true);
-#endif
+//#ifdef WIN32
+//    SetIsFocusable(true);
+//#endif
 	SetWantLongClick(true);
 	AddChild(&m_scrollbar_x);
 	AddChild(&m_scrollbar_y);
