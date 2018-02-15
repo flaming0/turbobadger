@@ -109,7 +109,7 @@ public:
 	void SetArray(TBValueArray *arr, SET set);
 
 	/** Set the value either as a string, number or array of numbers, depending of the string syntax. */
-	void SetFromStringAuto(const char *str, SET set);
+	void SetFromStringAuto(const char *str, SET set, bool ignoreArray = false);
 
 	int GetInt() const;
 	float GetFloat() const;

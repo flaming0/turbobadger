@@ -155,12 +155,13 @@ const char *TBNode::GetValueStringRaw(const char *request, const char *def)
 class FileParser : public TBParserStream
 {
 public:
-	bool Read(const char *filename, TBParserTarget *target)
+	bool Read(const char *filename, TBParserTarget *target, bool ignoringArray = false)
 	{
 		f = TBFile::Open(filename, TBFile::MODE_READ);
 		if (!f)
 			return false;
 		TBParser p;
+        p.m_ignoringArray = ignoringArray;
 		TBParser::STATUS status = p.Read(this, target);
 		delete f;
 		return status == TBParser::STATUS_OK ? true : false;
@@ -309,8 +310,13 @@ bool TBNode::ReadFile(const char *filename, TB_NODE_READ_FLAGS flags)
 	if (!(flags & TB_NODE_READ_FLAGS_APPEND))
 		Clear();
 	FileParser p;
+
+    bool ignoringArray = false;
+    if (flags & TB_NODE_READ_IGNORE_ARRAYS)
+        ignoringArray = true;
+
 	TBNodeTarget t(this, filename);
-	if (p.Read(filename, &t))
+	if (p.Read(filename, &t, ignoringArray))
 	{
 		TBNodeRefTree::ResolveConditions(this);
 		return true;

@@ -18,7 +18,7 @@ bool TBLanguage::Load(const char *filename)
 {
 	// Read the file into a node tree (even though it's only a flat list)
 	TBNode node;
-	if (!node.ReadFile(filename))
+	if (!node.ReadFile(filename, TB_NODE_READ_IGNORE_ARRAYS))
 		return false;
 
 	// Go through all nodes and add to the strings hash table

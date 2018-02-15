@@ -321,7 +321,7 @@ void TBParser::OnLine(char *line, TBParserTarget *target)
 		{
 			token[token_len] = 0;
 			UnescapeString(line);
-			value.SetFromStringAuto(line, TBValue::SET_AS_STATIC);
+			value.SetFromStringAuto(line, TBValue::SET_AS_STATIC, m_ignoringArray);
 		}
 		target->OnToken(current_line_nr, token, value);
 

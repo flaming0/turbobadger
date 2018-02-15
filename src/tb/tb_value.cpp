@@ -271,7 +271,7 @@ void TBValue::SetArray(TBValueArray *arr, SET set)
 		m_packed.type = TYPE_ARRAY;
 }
 
-void TBValue::SetFromStringAuto(const char *str, SET set)
+void TBValue::SetFromStringAuto(const char *str, SET set, bool ignoreArray)
 {
 	if (!str)
 		SetNull();
@@ -282,7 +282,7 @@ void TBValue::SetFromStringAuto(const char *str, SET set)
 		else
 			SetInt(atoi(str));
 	}
-	else if (is_start_of_number(str) && contains_non_trailing_space(str))
+	else if (is_start_of_number(str) && contains_non_trailing_space(str) && !ignoreArray)
 	{
 		// If the number has nontrailing space, we'll assume a list of numbers (example: "10 -4 3.5")
 		SetNull();

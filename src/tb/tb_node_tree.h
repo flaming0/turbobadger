@@ -16,6 +16,7 @@ enum TB_NODE_READ_FLAGS {
 	/** Read nodes without clearing first. Can be used to append
 		data from multiple sources, or inject dependencies. */
 	TB_NODE_READ_FLAGS_APPEND = 1,
+    TB_NODE_READ_IGNORE_ARRAYS = 2
 };
 MAKE_ENUM_FLAG_COMBO(TB_NODE_READ_FLAGS);
 

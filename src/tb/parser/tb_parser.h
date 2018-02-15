@@ -49,6 +49,7 @@ public:
 	};
 	TBParser() {}
 	STATUS Read(TBParserStream *stream, TBParserTarget *target);
+    bool m_ignoringArray = false;
 private:
 	int current_indent;
 	int current_line_nr;
