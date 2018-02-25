@@ -34,6 +34,12 @@ bool TBWidget::update_skin_states = true;
 bool TBWidget::show_focus_state = false;
 
 static std::unordered_map<uint32, TBWidget::TOUCH_INFO*> s_touch_info;
+static std::function<bool()> g_focusedDrawHook;
+
+void SetCanDrawFocusedStateHook(std::function<bool()> hook)
+{
+    g_focusedDrawHook = hook;
+}
 
 TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32 id)
 {
@@ -959,8 +965,11 @@ void TBWidget::OnPaintChildren(const PaintProps &paint_props)
 		if (!skin_element || !skin_element->HasState(SKIN_STATE_FOCUSED, context))
 		{
 			WIDGET_STATE state = focused_widget->GetAutoState();
-			if (state & SKIN_STATE_FOCUSED)
-				g_tb_skin->PaintSkin(focused_widget->m_rect, TBIDC("generic_focus"), static_cast<SKIN_STATE>(state), context);
+            if (g_focusedDrawHook && g_focusedDrawHook())
+            {
+                if (state & SKIN_STATE_FOCUSED)
+                    g_tb_skin->PaintSkin(focused_widget->m_rect, TBIDC("generic_focus"), static_cast<SKIN_STATE>(state), context);
+            }
 		}
 	}
 

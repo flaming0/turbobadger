@@ -13,6 +13,7 @@
 #include "tb_widget_value.h"
 #include "tb_object.h"
 #include "tb_font_desc.h"
+#include <functional>
 
 namespace tb {
 
@@ -24,6 +25,9 @@ class TBWidgetListener;
 class TBLayout;
 class TBLongClickTimer;
 struct INFLATE_INFO;
+
+// HACK:
+void SetCanDrawFocusedStateHook(std::function<bool()> hook);
 
 // == Generic widget stuff =================================================
 
