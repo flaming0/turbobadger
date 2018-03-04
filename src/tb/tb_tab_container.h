@@ -15,6 +15,7 @@ namespace tb {
 class TBTabLayout : public TBLayout
 {
 public:
+    TBButton *m_btnCloseWorkaround = nullptr;
 	// For safe typecasting
 	TBOBJECT_SUBCLASS(TBTabLayout, TBLayout);
 

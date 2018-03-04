@@ -113,7 +113,7 @@ bool TBWindow::EnsureFocus()
 		success = SetFocusRecursive(WIDGET_FOCUS_REASON_UNKNOWN);
     if (success)
     {
-        if (CheckCanFocus && CheckCanFocus())
+        // if (CheckCanFocus && CheckCanFocus())
             SetAutoFocusState(true);
     }
 	return success;

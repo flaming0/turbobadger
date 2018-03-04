@@ -15,7 +15,10 @@ void TBTabLayout::OnChildAdded(TBWidget *child)
 	if (TBButton *button = TBSafeCast<TBButton>(child))
 	{
 		button->SetSqueezable(true);
-		button->SetSkinBg(TBIDC("TBTabContainer.tab"));
+        if (button->GetSkinBg() != TBIDC("TBWindow.close"))
+            button->SetSkinBg(TBIDC("TBTabContainer.tab"));
+        else
+            m_btnCloseWorkaround = button;
 		button->SetID(TBIDC("tab"));
 	}
 }
@@ -120,6 +123,10 @@ bool TBTabContainer::OnEvent(const TBWidgetEvent &ev)
 		ev.target->GetID() == TBIDC("tab") &&
 		ev.target->GetParent() == &m_tab_layout)
 	{
+        if (ev.target == m_tab_layout.m_btnCloseWorkaround)
+            return false;
+
+
 		int clicked_index = m_tab_layout.GetIndexFromChild(ev.target);
 		SetValue(clicked_index);
 		return true;
