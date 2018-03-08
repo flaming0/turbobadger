@@ -26,9 +26,6 @@ class TBLayout;
 class TBLongClickTimer;
 struct INFLATE_INFO;
 
-// HACK:
-void SetCanDrawFocusedStateHook(std::function<bool()> hook);
-
 // == Generic widget stuff =================================================
 
 enum TB_ALIGN {
@@ -1092,6 +1089,10 @@ private:
 	/** Returns the opacity for this widget multiplied with its skin opacity and state opacity. */
 	float CalculateOpacityInternal(WIDGET_STATE state, TBSkinElement *skin_element) const;
 };
+
+// HACK:
+void SetCanDrawFocusedStateHook(std::function<bool()> hook);
+void SetMoveFocusHook(std::function<bool(AXIS axis, bool forward)> hook);
 
 } // namespace tb
 

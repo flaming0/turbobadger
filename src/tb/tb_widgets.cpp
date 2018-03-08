@@ -35,10 +35,16 @@ bool TBWidget::show_focus_state = false;
 
 static std::unordered_map<uint32, TBWidget::TOUCH_INFO*> s_touch_info;
 static std::function<bool()> g_focusedDrawHook;
+static std::function<bool(AXIS axis, bool forward)> g_moveFocusHook;
 
 void SetCanDrawFocusedStateHook(std::function<bool()> hook)
 {
     g_focusedDrawHook = hook;
+}
+
+void SetMoveFocusHook(std::function<bool(AXIS axis, bool forward)> hook)
+{
+    g_moveFocusHook = hook;
 }
 
 TBWidget::TOUCH_INFO *TBWidget::GetTouchInfo(uint32 id)
@@ -715,6 +721,9 @@ static bool TryFocusOnChildRecursive(tb::TBWidget *startFrom, bool forward)
 
 bool TBWidget::MoveFocus(AXIS axis, bool forward)
 {
+    if (g_moveFocusHook && g_moveFocusHook(axis, forward))
+        return true;
+
     TBWidget *origin = focused_widget;
     if (!origin)
         origin = this;
