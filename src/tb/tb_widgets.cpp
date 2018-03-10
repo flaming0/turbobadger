@@ -952,6 +952,13 @@ void TBWidget::OnPaintChildren(const PaintProps &paint_props)
 				WIDGET_STATE state = child->GetAutoState();
 				float old_opacity = g_renderer->GetOpacity();
 				float opacity = old_opacity * child->CalculateOpacityInternal(state, skin_element);
+
+                if (state & SKIN_STATE_FOCUSED)
+                {
+                    if (g_focusedDrawHook && !g_focusedDrawHook())
+                        opacity = 0.0f;
+                }
+
 				if (opacity > 0)
 				{
 					g_renderer->SetOpacity(opacity);
