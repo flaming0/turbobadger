@@ -32,6 +32,8 @@ public:
 	static void AddGlobalListener(TBWidgetListener *listener);
 	static void RemoveGlobalListener(TBWidgetListener *listener);
 
+	virtual ~TBWidgetListener() {}
+
 	/** Called when widget is being deleted (in its destructor, so virtual functions are already gone). */
 	virtual void OnWidgetDelete(TBWidget *widget) {}
 
